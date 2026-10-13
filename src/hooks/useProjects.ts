@@ -1,7 +1,7 @@
 // src/hooks/useProjects.ts
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { LAMPORTS_PER_SOL, PublicKey, type Connection } from '@solana/web3.js';
 import { BN, type Program } from '@coral-xyz/anchor';
 import {
   getProgram, getProvider, getReadonlyProgram, findVaultPda,
@@ -9,7 +9,8 @@ import {
 } from '../lib/anchor';
 import { parseTxError, type ChainPact } from '../lib/pacts';
 import type { ProjectAccount } from '../types/pact';
-import { logPactEvent, fetchMoneyEvents } from '../lib/activity';
+import { logPactEvent, fetchMoneyEvents, type PactEvent } from '../lib/activity';
+import { accountKeysOf, sumOutflowsSol, vaultSolDelta } from '../lib/treasuryAmounts';
 import { triggerPushNotification } from '../lib/pushNotifications';
 import { filterVisiblePacts } from '../lib/hiddenPacts';
 import { useLanguage } from '../lib/i18n/LanguageContext';
@@ -326,6 +327,12 @@ export interface TreasurySummary {
   distributedRecentSol: number;
   pendingClaimsSol: number;
   flows: TreasuryFlow[];
+  /**
+   * Vrai quand les sorties affichées viennent du delta on-chain du vault
+   * (y compris un vrai zéro). Faux tant que la lecture n'a pas abouti :
+   * l'UI doit montrer « — », pas 0.
+   */
+  flowsVerified: boolean;
   loading: boolean;
   error: string | null;
 }
@@ -333,6 +340,81 @@ export interface TreasurySummary {
 const MAX_FLOWS_SHOWN = 10;
 /** Fenêtre lue dans pact_events : large, car on filtre ensuite les pacts cachés. */
 const EVENTS_WINDOW = 60;
+/**
+ * Plafond de getTransaction. Au-delà, le devnet public répond 429 et
+ * l'ancienne page Treasury tombait avant d'avoir un chiffre. On ne
+ * vérifie que ce qu'on peut afficher, plus une petite marge pour
+ * écarter les lignes de journal qui n'ont pas bougé le vault.
+ */
+const MAX_TX_LOOKUPS = 16;
+const TX_LOOKUP_CONCURRENCY = 4;
+
+async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+  const out: R[] = new Array(items.length);
+  let cursor = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (cursor < items.length) {
+      const index = cursor;
+      cursor += 1;
+      out[index] = await fn(items[index]);
+    }
+  });
+  await Promise.all(workers);
+  return out;
+}
+
+type FlowVerdict =
+  | { kind: 'flow'; flow: TreasuryFlow }
+  | { kind: 'nomove' }
+  | { kind: 'unread' };
+
+/**
+ * Confirme un mouvement d'argent sur la transaction elle-même.
+ * `nomove` : la tx a été lue et le vault n'a pas bougé (ligne de journal
+ * à écarter). `unread` : la tx n'a pas pu être lue — on ne substitue pas
+ * le montant du journal.
+ */
+async function verifyMoneyEvent(
+  connection: Connection,
+  event: PactEvent,
+  projectTitle: string,
+  labels: { Fund: string; Distribute: string },
+): Promise<FlowVerdict> {
+  let vault: string;
+  try {
+    vault = findVaultPda(new PublicKey(event.projectPda))[0].toBase58();
+  } catch {
+    return { kind: 'unread' };
+  }
+  try {
+    const tx = await connection.getParsedTransaction(event.txSig, {
+      commitment: 'confirmed',
+      maxSupportedTransactionVersion: 0,
+    });
+    if (!tx?.meta) return { kind: 'unread' };
+    const delta = vaultSolDelta(
+      {
+        accountKeys: accountKeysOf(tx.transaction.message),
+        preBalances: tx.meta.preBalances,
+        postBalances: tx.meta.postBalances,
+      },
+      vault,
+    );
+    if (delta == null || delta === 0) return { kind: 'nomove' };
+    return {
+      kind: 'flow',
+      flow: {
+        signature: event.txSig,
+        label: delta > 0 ? labels.Fund : labels.Distribute,
+        projectTitle,
+        amountSol: delta,
+        when: tx.blockTime ?? Math.floor(new Date(event.createdAt).getTime() / 1000),
+      },
+    };
+  } catch {
+    return { kind: 'unread' };
+  }
+}
 
 export function useTreasury(): TreasurySummary {
   const program = useAnchorProgram();
@@ -353,6 +435,7 @@ export function useTreasury(): TreasurySummary {
     distributedRecentSol: 0,
     pendingClaimsSol: 0,
     flows: [],
+    flowsVerified: false,
     loading: true,
     error: null,
   });
@@ -373,7 +456,7 @@ export function useTreasury(): TreasurySummary {
 
         // Index pda → titre, pour nommer les flux sans re-scanner quoi que ce soit.
         const titleByPda = new Map<string, string>(
-          projects.map((r) => [r.publicKey.toBase58(), r.account.title || 'Projet'])
+          projects.map((r) => [r.publicKey.toBase58(), r.account.title || t('treasury.untitled')])
         );
 
         const vaultInfos = vaultPdas.length
@@ -387,40 +470,33 @@ export function useTreasury(): TreasurySummary {
     // cohérent (audit 19/09 : Profil affichait 2% de trop vs Treasury).
         const pendingClaimsSol = totalValueLockedSol * 0.98;
 
-        // ─── ② Flux : une seule requête Supabase, zéro RPC ───
+        // ─── ② Le journal n'est qu'un index de signatures. Le montant
+        // affiché est le delta de lamports du vault DANS la transaction.
+        // amount_sol (écrit par le client) incluait le loyer du compte et,
+        // parfois, une ligne sur une tx qui n'avait rien distribué.
         const events = await fetchMoneyEvents(EVENTS_WINDOW);
-
-        const flows: TreasuryFlow[] = events
-          // Un événement dont le pact n'existe plus (ou est masqué) n'a pas à
-          // remonter : le titre serait vide et le montant fausserait le total.
+        const candidates = events
           .filter((e) => titleByPda.has(e.projectPda))
-          .map((e) => {
-            const amount = e.amountSol ?? 0;
-            return {
-              signature: e.txSig,
-              label:
-                e.kind === 'fund'
-                  ? INSTRUCTION_LABELS.Fund
-                  : INSTRUCTION_LABELS.Distribute,
-              projectTitle: titleByPda.get(e.projectPda) as string,
-              // Le signe porte le sens du mouvement : un financement entre dans
-              // le vault, une distribution en sort. La table stocke un montant
-              // absolu, c'est ici qu'on l'oriente.
-              amountSol: e.kind === 'fund' ? Math.abs(amount) : -Math.abs(amount),
-              when: Math.floor(new Date(e.createdAt).getTime() / 1000),
-            };
-          });
+          .slice(0, MAX_TX_LOOKUPS);
 
-        const distributedRecentSol = flows
-          .filter((f) => f.amountSol < 0)
-          .reduce((s, f) => s + Math.abs(f.amountSol), 0);
+        const verdicts = await mapLimit(candidates, TX_LOOKUP_CONCURRENCY, (e) =>
+          verifyMoneyEvent(connection, e, titleByPda.get(e.projectPda) as string, {
+            Fund: INSTRUCTION_LABELS.Fund,
+            Distribute: INSTRUCTION_LABELS.Distribute,
+          }),
+        );
+        const flows = verdicts.flatMap((v) => (v.kind === 'flow' ? [v.flow] : [])).slice(0, MAX_FLOWS_SHOWN);
+        const anyReadable = verdicts.some((v) => v.kind !== 'unread');
+        const flowsVerified = candidates.length === 0 || anyReadable;
+        const distributedRecentSol = sumOutflowsSol(flows.map((f) => f.amountSol));
 
         if (!cancelled) {
           setState({
             totalValueLockedSol,
             distributedRecentSol,
             pendingClaimsSol,
-            flows: flows.slice(0, MAX_FLOWS_SHOWN),
+            flows,
+            flowsVerified,
             loading: false,
             error: null,
           });

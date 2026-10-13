@@ -28,7 +28,7 @@ import '../../styles/premium.css';
 // Les libellés passent par t() : 'Réseau' et 'À propos' étaient écrits en
 // français en dur et restaient tels quels quand l'app passait en anglais.
 const NAV_LINKS = [
-  { href: '#/', key: 'nav.dashboard' },
+  { href: '#/dashboard', key: 'nav.dashboard' },
   { href: '#/marketplace', key: 'nav.marketplace' },
   { href: '#/pacts', key: 'nav.pacts' },
   { href: '#/builders', key: 'nav.builders' },
@@ -51,6 +51,7 @@ export default function PremiumNav({ active }: { active: string }) {
   // hérite du réglage sans rien câbler. Le panneau est en position:fixed, sa
   // place dans le DOM n'affecte pas sa mise en page.
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   // Santé de l'endpoint RPC principal : montée ICI, avec le panneau
   // Paramètres, pour la même raison — PremiumNav est le seul point commun
   // aux dix pages premium. Une panne de l'endpoint par défaut (relais Edge
@@ -68,17 +69,36 @@ export default function PremiumNav({ active }: { active: string }) {
     }
   }, []);
 
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [active]);
+
   // Gestionnaire de clic unifié : change le hash et empêche le saut navigateur
   const handleNavClick = (href: string) => (e: React.MouseEvent) => {
     e.preventDefault();
+    setMenuOpen(false);
+    if (window.location.hash === href) return;
     window.location.hash = href;
   };
 
   return (
     <>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 26 }}>
-      <BrandLogo size={30} fontSize={16} />
-      <nav style={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }} aria-label={t('nav.mainNav')}>
+    <a className="p-skip" href="#main">{t('nav.skipToContent')}</a>
+    <div className="p-shell-nav">
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+        <BrandLogo size={30} fontSize={16} />
+        <span className="p-beta" title={t('footer.unaudited')}>{t('nav.devnetBeta')}</span>
+      </span>
+      <button
+        type="button"
+        className="p-nav-toggle"
+        aria-expanded={menuOpen}
+        aria-controls="premium-nav-links"
+        onClick={() => setMenuOpen((open) => !open)}
+      >
+        {menuOpen ? t('nav.closeMenu') : t('nav.openMenu')}
+      </button>
+      <nav id="premium-nav-links" className="p-shell-links" data-open={menuOpen ? 'true' : 'false'} aria-label={t('nav.mainNav')}>
         {NAV_LINKS.map((l) => (
           <button
             key={l.href}
@@ -121,7 +141,7 @@ export default function PremiumNav({ active }: { active: string }) {
                 cursor: 'pointer',
                 padding: 0,
               }}
-              aria-label={`Ambiance ${APPEARANCE_META[id].label}`}
+              aria-label={t('nav.appearanceAria', { name: APPEARANCE_META[id].label })}
             />
           ))}
         </span>
@@ -205,6 +225,7 @@ export default function PremiumNav({ active }: { active: string }) {
               type="button"
               onClick={() => setLang(code)}
               aria-pressed={lang === code}
+              aria-label={t(code === 'fr' ? 'nav.langFr' : 'nav.langEn')}
               style={{
                 fontSize: 11.5,
                 fontWeight: lang === code ? 700 : 550,
@@ -275,6 +296,7 @@ export default function PremiumNav({ active }: { active: string }) {
       onVerifier={santeRpc.verifier}
       onOpenSettings={() => setSettingsOpen(true)}
     />
+    <div id="main" tabIndex={-1} />
     </>
   );
 }

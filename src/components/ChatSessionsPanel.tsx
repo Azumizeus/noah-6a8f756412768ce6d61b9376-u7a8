@@ -26,7 +26,7 @@ import { formatAddress } from '../lib/pacts';
 import { useLanguage } from '../lib/i18n/LanguageContext';
 
 export default function ChatSessionsPanel({ wallet }: { wallet: string }) {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const { signMessage } = useWallet();
   const [sessions, setSessions] = useState<ChatSessionEntry[]>([]);
   const [busy, setBusy] = useState(false);
@@ -41,14 +41,10 @@ export default function ChatSessionsPanel({ wallet }: { wallet: string }) {
 
   const handleRevoke = async () => {
     if (!signMessage) {
-      setError(lang === 'en'
-        ? 'This wallet cannot sign messages — revocation unavailable.'
-        : 'Ce wallet ne peut pas signer de message — révocation indisponible.');
+      setError(t('chatSession.noSign'));
       return;
     }
-    const confirmed = window.confirm(lang === 'en'
-      ? 'Revoke every chat session of this wallet, on all devices and all projects? A wallet signature is required.'
-      : 'Révoquer toutes les sessions de chat de ce wallet, sur tous les appareils et tous les projets ? Une signature du wallet est requise.');
+    const confirmed = window.confirm(t('chatSession.confirm'));
     if (!confirmed) return;
 
     setBusy(true);
@@ -70,19 +66,15 @@ export default function ChatSessionsPanel({ wallet }: { wallet: string }) {
   return (
     <div className="glass-panel p-5">
       <h2 className="mb-1 font-sans text-lg font-semibold text-white">
-        {lang === 'en' ? 'Chat sessions' : 'Sessions de chat'}
+        {t('chatSession.heading')}
       </h2>
       <p className="mb-4 text-xs text-ink-400">
-        {lang === 'en'
-          ? 'A chat session is a token your wallet signs once, then reused for 24 h so you are not asked to sign every message.'
-          : "Une session de chat est un jeton que ton wallet signe une fois, réutilisé 24 h pour t'éviter une signature par message."}
+        {t('chatSession.intro')}
       </p>
 
       {sessions.length === 0 ? (
         <p className="text-xs text-ink-400">
-          {lang === 'en'
-            ? 'No session stored in this browser.'
-            : 'Aucune session stockée dans ce navigateur.'}
+          {t('chatSession.empty')}
         </p>
       ) : (
         <ul className="space-y-1.5">
@@ -102,8 +94,8 @@ export default function ChatSessionsPanel({ wallet }: { wallet: string }) {
                 title={fmt(s.expiresAt)}
               >
                 {s.stale
-                  ? (lang === 'en' ? 'expired' : 'expirée')
-                  : (lang === 'en' ? `until ${fmt(s.expiresAt)}` : `jusqu'au ${fmt(s.expiresAt)}`)}
+                  ? t('chatSession.expired')
+                  : t('chatSession.until', { date: fmt(s.expiresAt) })}
               </span>
             </li>
           ))}
@@ -114,17 +106,13 @@ export default function ChatSessionsPanel({ wallet }: { wallet: string }) {
           liste ci-dessus se lit comme un inventaire complet, ce qu'elle
           n'est pas. */}
       <p className="mt-3 rounded-lg border border-white/5 bg-black/20 px-3 py-2 text-[11px] leading-relaxed text-ink-400">
-        {lang === 'en'
-          ? 'This list only covers the current browser. Sessions opened on another device are not visible here — the server keeps no registry of issued tokens. Revoking, however, applies everywhere.'
-          : "Cette liste ne couvre que le navigateur courant. Les sessions ouvertes sur un autre appareil n'y figurent pas — le serveur ne tient aucun registre des jetons émis. La révocation, elle, s'applique partout."}
+        {t('chatSession.browserOnly')}
       </p>
 
       {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
       {done && (
         <p className="mt-2 text-xs text-emerald-300">
-          {lang === 'en'
-            ? 'Sessions revoked. The next message will ask for a new signature.'
-            : 'Sessions révoquées. Le prochain message redemandera une signature.'}
+          {t('chatSession.revoked')}
         </p>
       )}
 
@@ -134,9 +122,7 @@ export default function ChatSessionsPanel({ wallet }: { wallet: string }) {
         disabled={busy}
         className="mt-3 w-full rounded-lg border border-red-500/30 bg-red-500/10 py-2 text-xs font-medium text-white transition hover:bg-red-500/20 disabled:opacity-50"
       >
-        {busy
-          ? (lang === 'en' ? 'Revoking…' : 'Révocation…')
-          : (lang === 'en' ? 'Revoke all sessions (all devices)' : 'Révoquer toutes les sessions (tous appareils)')}
+        {busy ? t('chatSession.revoking') : t('chatSession.revoke')}
       </button>
     </div>
   );

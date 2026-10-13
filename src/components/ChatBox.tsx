@@ -132,14 +132,10 @@ export function ChatBox({ projectPda, creatorWallet }: Props) {
   const handleRevokeSession = async () => {
     if (!publicKey) return;
     if (!signMessage) {
-      setError(lang === 'en'
-        ? 'This wallet cannot sign messages — revocation unavailable.'
-        : 'Ce wallet ne peut pas signer de message — révocation indisponible.');
+      setError(t('chat.noSignRevoke'));
       return;
     }
-    const confirmed = window.confirm(lang === 'en'
-      ? 'Revoke your chat sessions on every device, for all projects? A wallet signature is required.'
-      : 'Révoquer tes sessions de chat sur tous les appareils et tous les projets ? Une signature du wallet est requise.');
+    const confirmed = window.confirm(t('chat.revokeConfirm'));
     if (!confirmed) return;
 
     setRevoking(true);
@@ -160,9 +156,7 @@ export function ChatBox({ projectPda, creatorWallet }: Props) {
   const handleSend = async () => {
     if (!publicKey) return;
     if (!signMessage) {
-      setError(lang === 'en'
-        ? 'This wallet cannot sign messages — sending unavailable.'
-        : 'Ce wallet ne peut pas signer de message — envoi indisponible.');
+      setError(t('chat.noSignSend'));
       return;
     }
     const invalid = validateChatBody(body);
@@ -195,12 +189,10 @@ export function ChatBox({ projectPda, creatorWallet }: Props) {
   const handleDelete = async (id: number) => {
     if (!publicKey) return;
     if (!signMessage) {
-      setError(lang === 'en'
-        ? 'This wallet cannot sign messages — moderation unavailable.'
-        : 'Ce wallet ne peut pas signer de message — modération indisponible.');
+      setError(t('chat.noSignModerate'));
       return;
     }
-    if (!window.confirm(lang === 'en' ? 'Delete this message?' : 'Supprimer ce message ?')) return;
+    if (!window.confirm(t('chat.deleteConfirm'))) return;
     setDeletingId(id);
     setError(null);
     const r = await deleteChatMessage({
@@ -252,7 +244,7 @@ export function ChatBox({ projectPda, creatorWallet }: Props) {
                   type="button"
                   onClick={() => handleDelete(m.id)}
                   disabled={deletingId === m.id}
-                  title={lang === 'en' ? 'Delete (founder)' : 'Supprimer (founder)'}
+                  title={t('chat.deleteTitle')}
                   className="shrink-0 text-ink-500 transition hover:text-red-400 disabled:opacity-40"
                 >
                   {deletingId === m.id ? '…' : '×'}
@@ -267,30 +259,22 @@ export function ChatBox({ projectPda, creatorWallet }: Props) {
         <div className="space-y-1.5">
           {needsSignature ? (
             <p className="text-[11px] text-ink-500">
-              {lang === 'en'
-                ? `First message: a one-time signature, valid ${CHAT_SESSION_TTL_HOURS} h.`
-                : `Premier message : une signature unique, valable ${CHAT_SESSION_TTL_HOURS} h.`}
+              {t('chat.firstSignature', { hours: CHAT_SESSION_TTL_HOURS })}
             </p>
           ) : sessionExpiresAt ? (
             <div className="flex items-center gap-1.5 text-[11px] text-ink-500">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent-violet/70" aria-hidden="true" />
               <span title={sessionExpiresAt.toLocaleString(lang === 'fr' ? 'fr-FR' : 'en-US')}>
-                {lang === 'en'
-                  ? `Chat session active until ${sessionLabel(sessionExpiresAt)}`
-                  : `Session chat active jusqu'à ${sessionLabel(sessionExpiresAt)}`}
+                {t('chat.sessionActive', { date: sessionLabel(sessionExpiresAt) })}
               </span>
               <button
                 type="button"
                 onClick={handleRevokeSession}
                 disabled={revoking}
-                title={lang === 'en'
-                  ? 'Revoke on the server — invalidates this session on every device, for all projects.'
-                  : 'Révoquer côté serveur — invalide la session sur tous les appareils et tous les projets.'}
+                title={t('chat.revokeTitle')}
                 className="shrink-0 underline decoration-dotted underline-offset-2 transition hover:text-ink-200 disabled:opacity-40"
               >
-                {revoking
-                  ? (lang === 'en' ? 'Revoking…' : 'Révocation…')
-                  : (lang === 'en' ? 'Revoke' : 'Révoquer')}
+                {revoking ? t('chat.revoking') : t('chat.revoke')}
               </button>
             </div>
           ) : null}

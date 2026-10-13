@@ -6,21 +6,7 @@
 // ═══════════════════════════════════════════════════════════════════
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { translate, type Lang } from './translations';
-
-const STORAGE_KEY = 'buildpact_lang';
-
-function detectInitialLang(): Lang {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === 'fr' || stored === 'en') return stored;
-  } catch {
-    /* localStorage indisponible (navigation privée...) — fallback navigateur */
-  }
-  if (typeof navigator !== 'undefined' && navigator.language) {
-    return navigator.language.toLowerCase().startsWith('fr') ? 'fr' : 'en';
-  }
-  return 'fr';
-}
+import { LANG_STORAGE_KEY, readLang, writeLang } from './langStorage';
 
 interface LanguageContextValue {
   lang: Lang;
@@ -31,20 +17,39 @@ interface LanguageContextValue {
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>(() => detectInitialLang());
+  // Écriture SYNCHRONE au premier rendu : les modules qui lisent
+  // localStorage (parseTxError, badges de stage…) voient la même langue
+  // que l'interface, sans attendre un effet. Un choix déjà stocké n'est
+  // jamais écrasé par la langue du navigateur.
+  const [lang, setLangState] = useState<Lang>(() => {
+    const initial = readLang();
+    writeLang(initial);
+    return initial;
+  });
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, lang);
-    } catch {
-      /* non bloquant */
-    }
+    writeLang(lang);
     if (typeof document !== 'undefined') {
       document.documentElement.lang = lang;
     }
   }, [lang]);
 
-  const setLang = (l: Lang) => setLangState(l);
+  // Un autre onglet qui change la langue doit suivre, sinon deux vues
+  // du même site divergent. On ignore les écritures qui ne sont pas
+  // fr/en (une valeur corrompue ne doit pas faire basculer l'UI).
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== LANG_STORAGE_KEY) return;
+      if (event.newValue === 'fr' || event.newValue === 'en') setLangState(event.newValue);
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
+  const setLang = (l: Lang) => {
+    writeLang(l);
+    setLangState(l);
+  };
 
   const value = useMemo<LanguageContextValue>(
     () => ({

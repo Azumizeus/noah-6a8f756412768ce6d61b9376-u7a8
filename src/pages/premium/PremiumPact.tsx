@@ -9,6 +9,8 @@
 // ICI et DANS PactCard en même temps, ou pas du tout.
 // ═══════════════════════════════════════════════════════════════════
 import { useMemo, useState } from 'react';
+import { useLanguage } from '../../lib/i18n/LanguageContext';
+import TranslatedMessage from '../../components/TranslatedMessage';
 import { useWallet } from '@solana/wallet-adapter-react';
 import type { AnchorProvider, Program } from '@coral-xyz/anchor';
 import { useAnchorProgram, usePublicPact, usePactActions, useProjects } from '../../hooks/useProjects';
@@ -35,6 +37,7 @@ interface Props {
 }
 
 export default function PremiumPact({ pda }: Props = {}) {
+  const { t } = useLanguage();
   const pdaFromHash = (typeof window !== 'undefined' && window.location.hash.match(/\/v2\/pact\/([1-9A-HJ-NP-Za-km-z]{32,44})/))?.[1] ?? null;
   const pactData = usePublicPact(pda ?? pdaFromHash ?? null);
   const pact = pactData.pact;
@@ -89,7 +92,7 @@ export default function PremiumPact({ pda }: Props = {}) {
     if (!pact) return;
     const n = Number(fundAmount.replace(',', '.'));
     if (!Number.isFinite(n) || n <= 0) {
-      setFundError('Montant invalide.');
+      setFundError(t('v2.pact.fundInvalid'));
       return;
     }
     setFundError(null);
@@ -99,8 +102,9 @@ export default function PremiumPact({ pda }: Props = {}) {
   if (pactData.loading) {
     return (
       <div className="p-page">
-        <div style={{ maxWidth: 1160, margin: '0 auto', padding: 40 }}>
-          <div style={{ height: 220, borderRadius: 'var(--p-radius-lg)', background: 'var(--p-canvas)', border: '1px solid var(--p-line)' }} aria-hidden="true" />
+        <div style={{ maxWidth: 1160, margin: '0 auto', padding: '28px 24px 96px' }}>
+          <PremiumNav active="" />
+          <p role="status" style={{ marginTop: 20, color: 'var(--p-ink2)', fontSize: 14 }}>{t('v2.pact.loading')}</p>
         </div>
       </div>
     );
@@ -109,10 +113,10 @@ export default function PremiumPact({ pda }: Props = {}) {
   if (pactData.error || !pact) {
     return (
       <div className="p-page">
-        <div style={{ maxWidth: 1160, margin: '0 auto', padding: 40 }}>
-          <PremiumNav active="#/" />
-          <p style={{ padding: 16, borderRadius: 12, background: 'var(--p-canvas)', border: '1px solid var(--p-line)', color: 'var(--p-err)', fontSize: 13, marginTop: 20 }}>
-            {pactData.error ?? 'Pact introuvable.'}
+        <div style={{ maxWidth: 1160, margin: '0 auto', padding: '28px 24px 96px' }}>
+          <PremiumNav active="" />
+          <p role="alert" style={{ padding: 16, borderRadius: 12, background: 'var(--p-canvas)', border: '1px solid var(--p-line)', color: 'var(--p-err)', fontSize: 13, marginTop: 20 }}>
+            {pactData.error ?? t('v2.pact.notFound')}
           </p>
         </div>
       </div>
@@ -181,7 +185,7 @@ export default function PremiumPact({ pda }: Props = {}) {
               </div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <span className={'p-pill ' + (isOpen ? 'warn' : 'ok')} style={{ fontSize: 11 }}>
-                  {isOpen ? 'Ouvert' : 'Vault actif'}
+                  {isOpen ? t('v2.pact.statusOpen') : t('v2.pact.statusVault')}
                 </span>
                 <a
                   href={`https://solscan.io/account/${pact.pda.toBase58()}?cluster=devnet`}
@@ -197,15 +201,15 @@ export default function PremiumPact({ pda }: Props = {}) {
 
             {pitchText && (
               <p style={{ fontSize: 13.5, color: 'var(--p-ink2)', lineHeight: 1.7, marginTop: 14 }}>
-                {pitchText}
+                <TranslatedMessage text={pitchText} />
               </p>
             )}
 
             {/* Partage — la donnée les membres du founder */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 10, marginTop: 16 }}>
               <div className="p-kv">
-                <div className="b"><span className="k">Vault</span><span className="v">{pact.status === 'active' ? `${formatSol(pact.vaultBalanceSol)} SOL` : '—'}</span></div>
-                <div className="b"><span className="k">Membres</span><span className="v">{String(pact.members.length)}</span></div>
+                <div className="b"><span className="k">{t('v2.pact.vault')}</span><span className="v">{pact.status === 'active' ? `${formatSol(pact.vaultBalanceSol)} SOL` : '—'}</span></div>
+                <div className="b"><span className="k">{t('v2.pact.members')}</span><span className="v">{String(pact.members.length)}</span></div>
               </div>
             </div>
           </div>
@@ -214,7 +218,7 @@ export default function PremiumPact({ pda }: Props = {}) {
         {/* Actions on-chain — mêmes appels que la fiche legacy */}
         <section style={{ marginTop: 20, background: 'var(--p-canvas)', border: '1px solid var(--p-line)', borderRadius: 'var(--p-radius-lg)', padding: 20, boxShadow: 'var(--p-shadow)' }}>
           <h2 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--p-ink3)' }}>
-            Actions on-chain
+            {t('v2.pact.actions')}
           </h2>
 
           {/* Approbation */}
@@ -223,7 +227,7 @@ export default function PremiumPact({ pda }: Props = {}) {
               me ? (
                 me.approved ? (
                   <span className="p-pill ok" style={{ fontSize: 11 }}>
-                    ✓ Votre approbation est enregistrée on-chain
+                    {t('v2.pact.approved')}
                   </span>
                 ) : (
                   <>
@@ -234,7 +238,7 @@ export default function PremiumPact({ pda }: Props = {}) {
                       className="p-btn primary"
                       style={{ maxWidth: 260, minHeight: 40 }}
                     >
-                      {approveBusy ? '…' : 'Approuver mon pact'}
+                      {approveBusy ? '…' : t('v2.pact.approve')}
                     </button>
                     <a
                       href={approveSig ? `https://solscan.io/tx/${approveSig}?cluster=devnet` : '#'}
@@ -248,12 +252,12 @@ export default function PremiumPact({ pda }: Props = {}) {
                 )
               ) : (
                 <span style={{ fontSize: 12.5, color: 'var(--p-ink3)' }}>
-                  Les actions sont réservées aux membres signataires du pact.
+                  {t('v2.pact.membersOnly')}
                 </span>
               )
             ) : (
               <span style={{ fontSize: 12.5, color: 'var(--p-ink3)' }}>
-                Connectez un wallet pour interagir.
+                {t('v2.pact.connectWallet')}
               </span>
             )}
           </div>
@@ -270,8 +274,8 @@ export default function PremiumPact({ pda }: Props = {}) {
                   inputMode="decimal"
                   value={fundAmount}
                   onChange={(e) => setFundAmount(e.target.value)}
-                  placeholder="SOL à injecter (ex 0.05)"
-                  aria-label="Montant en SOL à financer"
+                  placeholder={t('v2.pact.fundPlaceholder')}
+                  aria-label={t('v2.pact.fundAria')}
                   style={{
                     flex: 1,
                     minWidth: 220,
@@ -291,7 +295,7 @@ export default function PremiumPact({ pda }: Props = {}) {
                   className="p-btn primary"
                   style={{ maxWidth: 200, minHeight: 40, flex: '0 0 auto' }}
                 >
-                  {actions.busyAction === 'fund' ? '…' : 'Financer le vault'}
+                  {actions.busyAction === 'fund' ? '…' : t('v2.pact.fund')}
                 </button>
               </div>
               {fundError && <p style={{ fontSize: 12, color: 'var(--p-err)', marginTop: 6 }}>{fundError}</p>}
@@ -307,7 +311,7 @@ export default function PremiumPact({ pda }: Props = {}) {
               className="p-btn primary"
               style={{ maxWidth: 260, marginTop: 16, minHeight: 40 }}
             >
-              {actions.busyAction === 'finalize' ? '…' : `Finaliser (${approvedCount}/${pact.members.length})`}
+              {actions.busyAction === 'finalize' ? '…' : t('v2.pact.finalize', { approved: approvedCount, total: pact.members.length })}
             </button>
           )}
         </section>
@@ -315,12 +319,12 @@ export default function PremiumPact({ pda }: Props = {}) {
         {/* Membres — part réel on-chain (bps → %) */}
         <section style={{ marginTop: 18, background: 'var(--p-canvas)', border: '1px solid var(--p-line)', borderRadius: 'var(--p-radius-lg)', overflow: 'hidden', boxShadow: 'var(--p-shadow)' }}>
           <h2 style={{ fontSize: 11, fontWeight: 650, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--p-ink3)', padding: '14px 18px', borderBottom: '1px solid var(--p-line)', margin: 0 }}>
-            Participants · {`${Math.round(shareTotal / 100)} %`} attribué{Math.round(shareTotal / 100) !== 100 ? 's' : ''}
+            {t('v2.pact.participants', { pct: Math.round(shareTotal / 100) })}
           </h2>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--p-line)' }}>
-                {['Wallet', 'Rôle', 'Part', 'Approuvé'].map((h) => (
+                {[t('v2.pact.thWallet'), t('v2.pact.thRole'), t('v2.pact.thShare'), t('v2.pact.thApproved')].map((h) => (
                   <th key={h} style={{ textAlign: 'left', fontSize: 10, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--p-ink3)', padding: '10px 16px', fontWeight: 600 }}>
                     {h}
                   </th>
@@ -334,7 +338,7 @@ export default function PremiumPact({ pda }: Props = {}) {
                     <a href={`https://solscan.io/account/${m.wallet.toBase58()}?cluster=devnet`} target="_blank" rel="noreferrer" style={{ color: 'var(--p-accent)', textDecoration: 'none', fontWeight: 600 }}>
                       {formatAddress(m.wallet.toBase58())}
                     </a>
-                    {m.wallet.toBase58() === myAddr && <span style={{ fontSize: 10, color: 'var(--p-ok)', marginLeft: 6 }}>(vous)</span>}
+                    {m.wallet.toBase58() === myAddr && <span style={{ fontSize: 10, color: 'var(--p-ok)', marginLeft: 6 }}>{t('v2.pact.you')}</span>}
                   </td>
                   <td style={{ padding: '11px 16px', color: 'var(--p-ink)' }}>{m.role}</td>
                   <td style={{ padding: '11px 16px', fontVariantNumeric: 'tabular-nums', color: 'var(--p-ink2)' }}>{(m.shareBps / 100).toFixed(2)} %</td>
@@ -347,11 +351,10 @@ export default function PremiumPact({ pda }: Props = {}) {
           </table>
         </section>
 
-        {/* Discussion & Vault — composants legacy réutilisés tels quels */}
-        <div style={{ marginTop: 20 }}>
+        {/* Discussion & Vault — composants legacy. La peau réécrit leur
+            encre (text-white / text-ink-*) pour le fond clair du shell. */}
+        <div className="p-legacy-skin" style={{ marginTop: 20, display: 'grid', gap: 20 }}>
           <ChatBox projectPda={pact.pda.toBase58()} creatorWallet={pact.creator.toBase58()} />
-        </div>
-        <div style={{ marginTop: 20 }}>
           <VaultPanel projectPda={pact.pda.toBase58()} members={pact.members} creatorWallet={pact.creator.toBase58()} />
         </div>
 

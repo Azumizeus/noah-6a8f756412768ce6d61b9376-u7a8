@@ -49,7 +49,7 @@ export default function PremiumMarketplace() {
       <div style={{ maxWidth: 1160, margin: '0 auto', padding: '28px 24px 96px' }}>
         <PremiumNav active="#/marketplace" />
         {/* Hero */}
-        <p className="p-eyebrow">Discovery</p>
+        <p className="p-eyebrow">{t('marketplace.eyebrow')}</p>
         <h1 style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-0.03em', marginTop: 10 }}>
           {t('marketplace.titleLine1')}{' '}
           <span style={{ color: 'var(--p-accent)' }}>{t('marketplace.titleLine2')}</span>
@@ -62,18 +62,18 @@ export default function PremiumMarketplace() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 14, marginTop: 24 }}>
           <div className="p-stat hero">
             <p className="k">{t('marketplace.statRecruitingLabel')}</p>
-            <p className="v">{recruiting.length}</p>
+            <p className="v">{loading ? '…' : recruiting.length}</p>
             <p className="s">{t('marketplace.statRecruitingSublabel')}</p>
           </div>
           <div className="p-stat">
             <p className="k">{t('marketplace.statFundingLabel')}</p>
-            <p className="v">{funding.length}</p>
+            <p className="v">{loading ? '…' : funding.length}</p>
             <p className="s">{t('marketplace.statFundingSublabel')}</p>
           </div>
           <div className="p-stat">
             <p className="k">{t('v2.marketplace.statRemaining')}</p>
             <p className="v">
-              {(() => {
+              {loading ? '…' : (() => {
                 const libre = pacts
                   .filter((p) => p.status !== 'active')
                   .reduce((s, p) => s + (100 - Math.round(p.members.reduce((x, m) => x + m.shareBps, 0) / 100)), 0);

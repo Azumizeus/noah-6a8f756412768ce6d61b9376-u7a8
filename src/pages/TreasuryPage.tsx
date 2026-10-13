@@ -22,7 +22,7 @@ export function TreasuryPage() {
     return t('treasury.dAgo', { n: d });
   }
 
-  const { totalValueLockedSol, distributedRecentSol, pendingClaimsSol, flows, loading, error } = useTreasury();
+  const { totalValueLockedSol, distributedRecentSol, pendingClaimsSol, flows, flowsVerified, loading, error } = useTreasury();
 
   return (
     <DashboardLayout walletSlot={<AppWalletButton />}>
@@ -54,7 +54,17 @@ export function TreasuryPage() {
         ) : (
           <>
             <FadeInUp><StatsCard label={t('treasury.statTvlLabel')} value={totalValueLockedSol} decimals={3} suffix="SOL" icon="earned" accent="violet" sublabel={t('treasury.statTvlSublabel')} /></FadeInUp>
-            <FadeInUp><StatsCard label={t('treasury.statDistributedLabel')} value={distributedRecentSol} decimals={3} suffix="SOL" icon="claimable" accent="neon" sublabel={t('treasury.statDistributedSublabel')} /></FadeInUp>
+            <FadeInUp>
+              {flowsVerified ? (
+                <StatsCard label={t('treasury.statDistributedLabel')} value={distributedRecentSol} decimals={3} suffix="SOL" icon="claimable" accent="neon" sublabel={t('treasury.statDistributedSublabel')} />
+              ) : (
+                <div className="glass-panel p-5">
+                  <p className="text-xs font-medium uppercase tracking-wider text-ink-400">{t('treasury.statDistributedLabel')}</p>
+                  <p className="mt-3 font-mono text-2xl font-bold text-white">—</p>
+                  <p className="mt-1 text-xs text-ink-300">{t('treasury.unverifiedFlows')}</p>
+                </div>
+              )}
+            </FadeInUp>
             <FadeInUp><StatsCard label={t('treasury.statPendingLabel')} value={pendingClaimsSol} decimals={3} suffix="SOL" icon="pacts" accent="gold" sublabel={t('treasury.statPendingSublabel')} /></FadeInUp>
           </>
         )}
@@ -87,7 +97,7 @@ export function TreasuryPage() {
       {!loading && flows.length === 0 && (
         <FadeInUp>
           <p className="glass-panel px-4 py-6 text-center text-sm text-ink-400">
-            {t('treasury.emptyFlows')}
+            {flowsVerified ? t('treasury.emptyFlows') : t('treasury.unverifiedFlows')}
           </p>
         </FadeInUp>
       )}

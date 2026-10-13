@@ -32,6 +32,8 @@ import PremiumDocs from './pages/premium/PremiumDocs';
 // vitrine juges). Aucune transaction : voir pages/premium/PremiumDemo.tsx.
 import PremiumDemo from './pages/premium/PremiumDemo';
 import PremiumAbout from './pages/premium/PremiumAbout';
+import PremiumMyDashboard from './pages/premium/PremiumMyDashboard';
+import PremiumNotFound from './pages/premium/PremiumNotFound';
 // Chantier 2 : la création de pact passe au shell premium. /v1/create reste
 // branché sur la page legacy tant que le chantier 3 (retrait de /v1) n'est
 // pas lancé — c'est le filet de sécurité si le shell premium régresse.
@@ -144,6 +146,12 @@ export default function App() {
               <PremiumNetwork />
             ) : route === '/about' ? (
               <PremiumAbout />
+            ) : route === '/dashboard' ? (
+              <PremiumMyDashboard />
+            ) : route === '/404' ? (
+              <PremiumNotFound />
+            ) : route === '/' || route === '/home' ? (
+              <RootRoute />
             ) : route === '/v1' ? (
               <DashboardPage />
             ) : route === '/v1/pacts' ? (
@@ -165,7 +173,7 @@ export default function App() {
             ) : route === '/v1/network' ? (
               <NetworkPage />
             ) : (
-              <RootRoute />
+              <PremiumNotFound />
             )}
             </AppErrorBoundary>
           </WalletModalProvider>
