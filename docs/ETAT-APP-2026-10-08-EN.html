@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="BuildPact — Current state of the app (2026-10-08)">
+<title>BuildPact — Current state of the app (2026-10-08)</title>
+<style>
+:root{--bg:#f7f6f3;--panel:#fff;--ink:#131318;--ink2:#55555f;--ink3:#6f6f7a;--line:#e4e2dc;--accent:#4c21c4;--ok:#0e8a5f;--warn:#b7791f;--err:#c13b58}
+@media (prefers-color-scheme: dark){:root{--bg:#0d0f14;--panel:#151821;--ink:#eceef4;--ink2:#a7adbd;--ink3:#7b8296;--line:#262b36;--accent:#a78bfa;--ok:#34d399;--warn:#f0b95c;--err:#ff7a92}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:-.01em}
+main{max-width:900px;margin:0 auto;padding:36px 22px 90px}
+h1{font-size:clamp(26px,4.6vw,38px);line-height:1.15;letter-spacing:-.03em;margin:0 0 6px}
+h2{font-size:22px;letter-spacing:-.02em;margin:38px 0 10px;padding-top:14px;border-top:1px solid var(--line)}
+h3{font-size:17px;margin:24px 0 8px}
+p{margin:10px 0}
+a{color:var(--accent)}
+code{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-word}
+pre{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;overflow:auto}
+pre code{background:none;border:0;padding:0;font-size:12.5px}
+blockquote{margin:16px 0;padding:12px 16px;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px}
+blockquote p{margin:4px 0;color:var(--ink2)}
+ul{margin:10px 0;padding-left:20px}
+ol{margin:10px 0;padding-left:22px}
+li{margin:4px 0}
+hr{border:0;border-top:1px solid var(--line);margin:26px 0}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);font-weight:600}
+tr:last-child td{border-bottom:0}
+footer{max-width:900px;margin:0 auto;padding:0 22px 40px;color:var(--ink3);font-size:12px}
+</style>
+</head>
+<body>
+<main>
+<h1>🗺️ BUILDPACT — CURRENT STATE OF THE APP (reference document)</h1>
+<blockquote><p><strong>Verified on 2026-10-08</strong> · Solana Devnet only This document <strong>replaces</strong> the August 2026 roadmaps as the reference: those describe the app BEFORE the premium shell and are kept as archives (see "Document map" below). Every value here was <strong>read from the code or measured</strong> on 2026-10-08, never copied from an earlier document.</p></blockquote>
+<hr>
+<h2>1. What the app is today</h2>
+<p>An on-chain pact between builders: a project is published with its roles and shares, other devs apply, the agreement is written on-chain, backers fund an escrow, and distribution follows.</p>
+<table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td>App repository</td><td><code>Azumizeus/noah-6a8f756412768ce6d61b9376-75mv</code> — branch <code>main</code></td></tr><tr><td>Last Noah commit merged</td><td><code>869f0b7</code> (AI Update: Supabase fallback)</td></tr><tr><td><code>main</code> on 2026-10-08</td><td><strong><code>5a6d9f6</code></strong> — 12 commits above <code>869f0b7</code>, pushed</td></tr><tr><td>Anchor program</td><td><code>9quyDwntXDBhNhTmrfCf7xEXVFaxYMB83BwPEUeqVoUJ</code> (devnet)</td></tr><tr><td>Protocol fee</td><td>200 bps (2%) → <code>AVhVM29hD6YRLb2DujhKfF8Ger4bgaCpx9P93Q3XBWSH</code></td></tr><tr><td>Former program (dead)</td><td><code>266V7Jct9EVWPeHscDwBpL13251EMUyak7WR9QiT59kQ</code> — closed, unrecoverable</td></tr></tbody></table>
+<hr>
+<h2>2. Actual technical architecture</h2>
+<ul><li><strong>Front end</strong>: Vite + React 19 + TypeScript + Tailwind. Entry point <code>src/main.tsx</code>, hash-based routing (<code>src/lib/router.ts</code>), one route per page.</li><li><strong>Wallet</strong>: <code>@solana/wallet-adapter</code> with three adapters — <code>SolanaMobileWalletAdapter</code> (Seed Vault / Seeker), Phantom, Solflare. The <code>appIdentity.uri</code> is derived from <code>window.location.origin</code>: an identity pinned to a stale Vercel URL would break MWA authorization (fixed).</li><li><strong>On-chain</strong>: Anchor program with <code>create_project</code>, <code>add_member</code>, <code>remove_member</code>, <code>approve</code>, <code>finalize</code>, <code>fund</code>, <code>distribute</code>, <code>close_project</code>, <code>update_description</code>. No mutable admin account: fees and the protocol wallet are compiled constants.</li><li><strong>Off-chain</strong>: Supabase (profiles, media, discussion, document vault, builder directory, translations) + Edge Functions (<code>push</code>, <code>contact</code>, <code>network-write</code>, <code>quest-write</code>, <code>update-profile</code>, <code>translate</code>, <code>vault</code>, <code>project-write</code>, <code>chat-moderate</code>, <code>open-roles</code>). Standing rule: <strong>no unverified public write</strong> — sensitive writes go through a wallet signature.</li></ul>
+<h3>Two skins coexist (acknowledged intermediate state)</h3>
+<table><thead><tr><th></th><th>Premium shell</th><th>Legacy <code>/v1</code></th></tr></thead><tbody><tr><td>Routes</td><td><code>#/</code>, <code>#/marketplace</code>, <code>#/pacts</code>, <code>#/builders</code>, <code>#/treasury</code>, <code>#/network</code>, <code>#/profile</code>, <code>#/docs</code>, <code>#/about</code>, <code>#/create</code>, <code>#/pact/&lt;pda&gt;</code></td><td><code>#/v1</code> and <code>#/v1/*</code></td></tr><tr><td>Default look</td><td><strong>light</strong></td><td><strong>dark</strong></td></tr><tr><td>Theming</td><td>4 palettes × 2 modes (<code>data-appearance</code> + <code>data-appearance-mode</code>)</td><td>historical theme (<code>data-theme</code> / <code>data-mode</code>)</td></tr><tr><td>Purpose</td><td>default path</td><td><strong>safety net</strong> during the migration</td></tr></tbody></table>
+<p>⚠️ Rule not to break: never read <code>data-mode</code> in the premium shell, nor <code>data-appearance</code> / <code>data-appearance-mode</code> in the legacy pages. The two systems have opposite defaults.</p>
+<hr>
+<h2>3. What shipped on 2026-10-08</h2>
+<table><thead><tr><th>What changed</th><th>State</th><th>What it changes for the user</th></tr></thead><tbody><tr><td>An anti-mass-push guard is committed</td><td>✅</td><td>the 5-file maximum rule finally exists everywhere, not on one machine</td></tr><tr><td>The premium shell's <strong>Settings</strong></td><td>✅</td><td>density, RPC, language, USD display, appearance — without going through <code>/v1/profile</code></td></tr><tr><td>The legacy settings folded into those Settings</td><td>✅</td><td>notifications + push, image preview, privacy, CSV export</td></tr><tr><td><strong>Pact creation</strong> in the new design</td><td>✅</td><td>the wizard is untouched: the new design dresses it, it does not rewrite it</td></tr><tr><td><strong>Consistent project cards</strong></td><td>✅</td><td>banner bounded, fallback gradient follows palette and mode</td></tr><tr><td>The <strong>profile edited in the premium shell reaches the server</strong></td><td>✅</td><td>a changed pseudo, avatar or banner shows in the builder directory and on other devices</td></tr></tbody></table>
+<p>The <strong>how</strong> of these changes — work-item numbering, commits, internal mechanisms — lives in <code>PLAN-CHANTIERS-PREMIUM-2026-10-08.md</code>. This document says what changed, not how: a commit hash or a CSS class name means nothing to a reader who is not inside the repo.</p>
+<p><strong>The premium profile now writes to the server.</strong> This is the day's most important fix, and it does not look like a bug: the premium form asked for a wallet signature… then <strong>wrote to the browser only</strong>. A pseudo or avatar changed on the premium side therefore showed up neither in the builder directory nor on another device — only the legacy portal really wrote. The signature it asked for was pointless afterwards: it carried a message the server never verified. Saving now writes locally first (the card updates immediately and stays readable offline), then sends the full profile to the <code>update-profile</code> Edge Function with the canonical message it can verify. The remote profile is read back before sending, so a field the premium form does not expose (bio, links, availability, theme palette) is not erased in the process.</p>
+<p><strong>Two fixes outside those changes, on 2026-10-08.</strong> The background-style picker offered three "HD" variants whose images were never committed: three console 404s on every settings open, and empty thumbnails. The three options are removed; an already-stored value falls back cleanly to the default, and a test now rejects any reference to a file missing from <code>public/</code>. Separately, a <strong>square</strong> banner overflowed its thumbnail and hid the title, description and figures, while the fallback gradient was hard-coded in three places, hence theme-blind: both are fixed, with a test that sweeps every premium page.</p>
+<hr>
+<h2>4. What remains</h2>
+<table><thead><tr><th>What remains</th><th>Reason</th></tr></thead><tbody><tr><td>Phasing out <code>/v1</code></td><td><strong>Needs a decision</strong>: keep <code>/v1</code> as a debugging door, or remove it? The "Historique ↗" link in <code>PremiumNav</code> must move with it.</td></tr></tbody></table>
+<p>Unblocked: pact creation now exists on both sides, so removing <code>/v1</code> no longer breaks the main path.</p>
+<p><strong>What would disappear is measured, not estimated.</strong> <code>INVENTAIRE-V1-2026-10-08.md</code> (§ 5) lists the <strong>52 files</strong> that exist only under <code>/v1</code> — pages, components of the same name, and even <code>PactPublicPage</code>, absent from the previous lists. The count is not the point that matters for the decision: <strong>five functional families have no premium equivalent</strong>. Removing <code>/v1</code> is therefore not a mere reskin cleanup, even though the main path itself is already covered on the premium side.</p>
+<p>⚠️ One thing not to miss before deleting anything: <code>ImagePreviewSettings</code> shares the <code>previewEnabled</code> state with <code>ThemeContext</code>, and <code>ImageHoverPreview</code> (mounted on the premium side by <code>PostCard</code>) uses it. The component can go, <strong>not</strong> <code>ThemeContext</code>.</p>
+<h3>Settings left to the legacy skin — a deliberate decision, not an oversight</h3>
+<p><code>ThemeModeGrid</code> (legacy theme), <code>BackgroundSwitch</code> (page backdrop), <code>GlowStrengthSwitch</code> (halo intensity). The premium shell has its own appearance system: copying them would create two competing controls for the same intent. And the halo only feeds legacy box-shadows — it would have <strong>no visible effect</strong> in the premium shell: a button that lies.</p>
+<hr>
+<h2>5. Verify the app yourself</h2>
+<p>From <code>buildpact-75mv/</code>:</p>
+<pre><code class="lang-bash">npm run typecheck     # tsc, must exit 0
+npm test              # node --test suite, 66/66 on 2026-10-08
+npm run build         # typecheck + vite build
+npm run guard:push    # rejects a batch larger than 5 files
+npm run guard:install # run ONCE per clone: installs the pre-push hook</code></pre>
+<p>Working rules:</p>
+<ul><li><strong>At most 5 files per push</strong> (enforced by the committed guard); explicit escape hatch: <code>ALLOW_MASS_PUSH=1</code>.</li><li><strong>Two consecutive failures on the same problem → STOP and ask.</strong></li><li>A project card is edited in <code>PremiumProjectCard</code>, <strong>never</strong> in the pages.</li></ul>
+<hr>
+<h2>6. Known limitations, not glossed over</h2>
+<table><thead><tr><th>Limitation</th><th>Verified detail</th></tr></thead><tbody><tr><td>Signing flows not tested by an agent</td><td>Creating a pact, funding, distributing: all require a real wallet. None of these flows has been run by an agent; they were validated by hand by Noah.</td></tr><tr><td>Real push subscription never exercised locally</td><td>The infrastructure exists (<code>public/push-sw.js</code>, <code>supabase/functions/push</code>, migration <code>create_push_subscriptions</code>). Only the VAPID keypair is missing. A real subscription is <strong>impossible</strong> from an automation browser: <code>Notification.permission</code> is <code>denied</code> there, and no agent tool can grant it.</td></tr><tr><td>Two demo pacts have a polluted description</td><td>The on-chain <code>description</code> field literally starts with <code>[🤝 Les deux]</code>. This is <strong>not</strong> a display defect: it is the stored text. It can be fixed through <code>updateDescription</code> (<code>EditDescriptionModal</code>), i.e. with a signature.</td></tr><tr><td>Profile saving not exercised with a real wallet</td><td>The premium profile's remote write is covered by unit tests and by the Edge Function contract (identical to the legacy portal, already in service), but the full path — signing with a real wallet, then reading the profile back from the directory — has not been run by an agent: it requires a wallet.</td></tr><tr><td><code>/v1</code> is still reachable</td><td>Two live skins in parallel until it is removed.</td></tr></tbody></table>
+<hr>
+<h2>7. Document map (what is the reference, what is an archive)</h2>
+<table><thead><tr><th>Document</th><th>Status</th></tr></thead><tbody><tr><td><strong><code>ETAT-APP-2026-10-08-FR.md</code> / <code>-EN.md</code> (+ <code>.html</code>)</strong></td><td>⭐ <strong>REFERENCE</strong> — read this first</td></tr><tr><td><code>ROADMAP-FR.md</code>, <code>ROADMAP-ENG.md</code></td><td>🗄️ Archive — hackathon roadmap, <strong>exactly one per language</strong></td></tr><tr><td><code>JUDGES-FR.md</code>, <code>JUDGES-ENG.md</code></td><td>🗄️ Archive — judges dossier, <strong>exactly one per language</strong> (includes the 19–20/09 audit pass)</td></tr><tr><td><code>buildpact-dossier-complet-v3.html</code></td><td>🗄️ Archive — presentation dossier, after the hackathon but before the premium shell</td></tr><tr><td><code>archive/</code></td><td>🗄️ Archive — <strong>every remaining duplicate</strong>, moved on 08/10: <code>ROADMAP- FR.md</code>, <code>ROADMAP- FR 2.md</code>, <code>ROADMAP-FR.html</code>, <code>ROADMAP-ENG.html</code>, <code>ROADMAP-FR (1).html</code>, <code>buildpact-roadmap-v2.html</code>, <code>buildpact-roadmap-v4.html</code>, <code>JUDGES FR.md</code>, <code>JUDGES ENG.md</code>, <code>buildpact-dossier-complet.html</code></td></tr><tr><td><code>CHECKLIST-TEST-WALLET-2026-10-08.md</code></td><td>🔧 Checklist to run with a real connected wallet (signatures, pact creation, description fix) — French only</td></tr><tr><td><code>INVENTAIRE-V1-2026-10-08.md</code></td><td>🔧 Item 3a — measured inventory of what exists only under <code>/v1</code>, plus a reasoned recommendation — French only</td></tr><tr><td><code>REVUE-DOCS-REFERENCE-2026-10-08.md</code></td><td>🔧 Review of this document: errors, gaps, passages too technical for an outside reader — French only</td></tr><tr><td><code>PLAN-CHANTIERS-PREMIUM-2026-10-08.md</code></td><td>🔧 Technical journal of the premium items: the "how" (numbering, commits, mechanisms)</td></tr></tbody></table>
+<p><strong>None of these files is deleted</strong>: they keep the memory of the hackathon. They simply carry an "archive" banner pointing here.</p>
+<p><strong>One live version per family.</strong> The duplicates sitting at the root of <code>docs/</code> — seven roadmaps, two judges dossiers, one doubled presentation dossier — were <strong>moved</strong> into <code>docs/archive/</code> on 2026-10-08: nothing was erased, but only one roadmap per language (<code>ROADMAP-FR.md</code>, <code>ROADMAP-ENG.md</code>) and one judges dossier per language (<code>JUDGES-FR.md</code>, <code>JUDGES-ENG.md</code>) remain. Why those: the <code>JUDGES FR.md</code> / <code>JUDGES ENG.md</code> variants, which arrived on 08/10 with the working-folder import, were an earlier snapshot — they lack the 19–20/09 audit pass that the hyphenated versions carry.</p>
+<p><strong>Where they live.</strong> All of these documents sit in the <code>docs/</code> folder of the <strong>app repository</strong> (<code>buildpact-75mv/</code>) — there is only one repository left. The <code>.html</code> files, the checking scripts and the archive documents were moved out of the working folder that held them: two repositories for a single project, one of which could not be pushed, was a permanent source of divergence.</p>
+<h3>Why two reference documents (FR and EN) instead of one</h3>
+<p>Because the hackathon English text was an <strong>automatic line-by-line merge</strong> (French then English glued together), sometimes wrong ("damage" for "casse"). Today's EN versions are written, not generated.The <code>.html</code> files are produced from the <code>.md</code> files by <code>docs/outils/md-to-html.mjs</code>: one source per language, so Markdown and HTML cannot diverge.</p>
+<h3>Check that the documents have not diverged</h3>
+<p>From the app root (<code>buildpact-75mv/</code>):</p>
+<pre><code class="lang-bash">node docs/outils/verifier-docs.mjs   # fails if a .html no longer matches its .md</code></pre>
+<p>The check regenerates each page in memory and compares it byte for byte with the one on disk: it catches a <code>.md</code> edited without regenerating, as well as a <code>.html</code> edited by hand. Only pages carrying the generator's signature are compared — the August roadmaps exist as <code>.md</code> and <code>.html</code> without either deriving from the other, and including them would raise two false alarms.</p>
+</main>
+<footer>Généré depuis ETAT-APP-2026-10-08-EN.md par outils/md-to-html.mjs — ne pas modifier ce fichier à la main.</footer>
+</body>
+</html>

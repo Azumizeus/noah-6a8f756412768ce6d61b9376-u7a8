@@ -1,0 +1,70 @@
+{
+  // ═══════════════════════════════════════════════════════════════════════
+  //  tsconfig.anchor.json — configuration TypeScript des TESTS ANCHOR
+  //
+  //  Séparé de tsconfig.json, qui est celui du FRONTEND (il a "files": []
+  //  et des "references" vers tsconfig.app.json / tsconfig.node.json — il
+  //  ne compile aucun fichier de test).
+  //
+  //  Pourquoi deux fichiers et pas un seul : un repo ne peut avoir qu'un
+  //  tsconfig.json à la racine, et les deux projets ont des cibles
+  //  incompatibles — DOM + JSX + ESM d'un côté, Node + CommonJS de l'autre.
+  //  Les fusionner casserait forcément l'un des deux.
+  //
+  //  Consommé par Anchor.toml [scripts] et par `npm run test:anchor`, qui
+  //  passent tous deux `-p ./tsconfig.anchor.json` à ts-mocha. Si ce chemin
+  //  retombait sur le tsconfig du frontend, ts-mocha compilerait avec
+  //  "files": [] : aucun test détecté, sortie « 0 passing », aucune erreur.
+  //  Un faux vert — le pire résultat possible.
+  // ═══════════════════════════════════════════════════════════════════════
+
+  "compilerOptions": {
+    // CommonJS, pas ESM. ts-mocha exécute via require().
+    "module": "commonjs",
+    "target": "es2020",
+    "lib": ["es2020", "dom"],
+
+    // LOAD-BEARING pour tests/workspace.ts : `import fs from "fs"` et
+    // `import path from "path"` sont des imports par défaut sur des modules
+    // CommonJS. Sans ce flag : TS1259.
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
+    // Les tests lisent l'IDL via fs.readFileSync aujourd'hui, donc pas
+    // strictement requis — mais un `import idl from "../target/idl/..."`
+    // est le réflexe suivant, et il échouerait sans ce flag.
+    "resolveJsonModule": true,
+
+    // Restreint les types globaux injectés. Sans "types", TypeScript charge
+    // tout ce qui traîne dans node_modules/@types — y compris @types/react
+    // du frontend, qui partage le même node_modules ici. Conflits de
+    // globals incompréhensibles à la clé.
+    "types": ["node", "mocha", "chai"],
+
+    // BigInt littéraux (200n, 10_000_000_000n) : utilisés dans les deux
+    // suites de test. Nécessite target >= es2020.
+    "strict": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "isolatedModules": false,
+    "noEmit": true
+  },
+
+  // package.json déclare "type": "module" pour Vite — on ne peut pas le
+  // retirer sans casser vite.config.ts, tailwind.config.js et
+  // postcss.config.js, qui sont tous en ESM.
+  //
+  // Conséquence : ts-node interpréterait les .ts des tests comme de l'ESM
+  // et échouerait en ERR_REQUIRE_ESM. Cette surcharge force le CommonJS
+  // pour le seul dossier tests/, sans toucher au frontend.
+  "ts-node": {
+    "moduleTypes": {
+      "tests/**/*.ts": "cjs"
+    }
+  },
+
+  // Limité à tests/ : ne jamais inclure src/ ici.
+  "include": ["tests/**/*.ts"],
+  "exclude": ["node_modules", "target", "src", "dist", "contracts"]
+}

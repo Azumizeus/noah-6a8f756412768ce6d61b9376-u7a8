@@ -1,0 +1,207 @@
+# ═══════════════════════════════════════════════════════════════════
+# CI BuildPact — vérifie chaque push sur main et chaque pull request.
+#
+# BLOQUANT (bloque le merge) :
+#   1. typecheck  (tsc --noEmit)
+#   2. lint       (eslint)
+#   3. test       (node --test — tests sans navigateur)
+#   4. build      (vite build)
+#
+# INFORMATIF, avec une seule exception BLOQUANTE :
+#   5. check:prod — la prod Vercel sert-elle bien le dépôt, et sans secret ?
+#      Le résultat est écrit dans le résumé du job (rapport Markdown).
+#
+# Choix assumé : une prod peut légitimement être en retard (déploiement en
+# cours, rollback volontaire). La divergence de commit est donc une INFORMATION
+# pour l'humain, pas une raison de bloquer la fusion de code correct.
+#
+# ⚠️ L'EXCEPTION : le code 3 (une valeur de forme secrète servie en clair par
+# la production) ARRÊTE le job. Ce n'est pas un retard de déploiement, c'est
+# une fuite — mesurée le 11/10/2026 : tous les contrôles du dépôt étaient verts
+# pendant que la production servait une clé d'API Helius en clair. Une clé
+# exposée ne se traite pas au prochain sprint.
+#
+# Sur une PR, la prod ne peut pas déjà servir la PR non fusionnée : on compare
+# donc au commit de la BRANCHE DE BASE (main) via PROD_EXPECT_SHA. Sur un push
+# sur main, on compare au commit poussé.
+# ═══════════════════════════════════════════════════════════════════
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  # Contrôle QUOTIDIEN (voir le job `quotidien` plus bas). Une réexposition
+  # doit être vue en quelques heures, pas découverte par hasard : c'est
+  # exactement ce qui s'est passé le 11/10/2026, où la clé a été servie en
+  # clair pendant que tous les contrôles du dépôt étaient verts.
+  # 06:17 UTC = 08:17 à Paris, un horaire décalé des heures rondes.
+  schedule:
+    - cron: '17 6 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: typecheck · lint · tests · build · prod
+    # Le planning quotidien ne relance pas toute la suite : il a son job.
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    env:
+      # Sur une PR : le commit de la branche de base à exiger en prod.
+      # Sur un push / manuel : vide → check:prod utilise le HEAD poussé.
+      PROD_EXPECT_SHA: ${{ github.event.pull_request.base.sha }}
+      # Optionnel : variable de dépôt pour viser une autre URL Vercel.
+      PROD_URL: ${{ vars.PROD_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Historique complet : check:prod compte les commits d'avance et
+          # résout le commit de base de la PR.
+          fetch-depth: 0
+
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: 'npm ci'
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests (sans navigateur)
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # La divergence de commit reste NON BLOQUANTE ; la fuite de clé (code 3)
+      # ARRÊTE le job. Le script écrit lui-même le rapport Markdown dans
+      # GITHUB_STEP_SUMMARY.
+      - name: Contrôle prod ↔ dépôt (divergence informative, fuite bloquante)
+        run: |
+          set +e
+          npm run check:prod
+          code=$?
+          set -e
+          case "$code" in
+            0) echo "✅ La production Vercel sert le dépôt, sans secret en clair." ;;
+            1) echo "::warning title=Prod diverge du dépôt::La production Vercel ne sert pas le commit attendu — voir le résumé du job. Non bloquant." ;;
+            3) echo "::error title=Clé d'API servie par la production::La livraison contient une valeur de forme secrète en clair. Révoquer la clé chez le fournisseur (une purge ou un redéploiement ne la dévalide pas), puis redéployer. Voir le résumé du job."; exit 1 ;;
+            *) echo "::notice title=check:prod indéterminable::La production est injoignable ou sans tampon de commit (code $code). Non bloquant." ;;
+          esac
+          # Garde-fou volontaire : divergence et indétermination ne font pas
+          # échouer le job. Seule la fuite (code 3) sort par `exit 1` ci-dessus.
+          exit 0
+
+  # ═══════════════════════════════════════════════════════════════════
+  # Contrôle quotidien — trois questions posées chaque matin.
+  #
+  # Pourquoi un job à part du reste : la suite complète (typecheck, lint,
+  # tests, build) répond à « le code est-il sain ? ». Ces trois contrôles
+  # répondent à « ce qui est PUBLIÉ est-il sain ? » — une question différente,
+  # posée à des adresses publiques, et qui peut devenir fausse sans qu'un seul
+  # octet du dépôt ait changé. C'est exactement ce qui s'est produit le
+  # 11/10/2026 : dépôt vert, production servant une clé.
+  #
+  #   check:prod     la production sert-elle le dépôt, et sans secret en clair ?
+  #   check:origine  vient-elle d'un commit, ou a-t-elle été publiée à la main ?
+  #   check:parc     les déploiements du projet servent-ils des octets propres ?
+  #
+  # ── Le jeton ───────────────────────────────────────────────────────
+  # check:parc et check:origine interrogent l'API Vercel : il leur faut
+  # VERCEL_TOKEN (Settings → Secrets and variables → Actions → New repository
+  # secret). Sans lui, les deux sortent en code 2 et ce job ÉCHOUE au lieu de
+  # passer au vert : un contrôle qui n'a rien mesuré ne doit pas ressembler à
+  # un contrôle qui a validé.
+  #
+  # ── Ce qui est bloquant, et ce qui ne l'est pas ────────────────────
+  #   clé en clair servie (code 3, prod ou parc)     → échec
+  #   production publiée à la main (code 3)          → échec
+  #   production en retard sur le dépôt (code 1)     → avertissement
+  #   indéterminable (code 2)                        → avertissement, sauf
+  #                                                    jeton absent
+  # ═══════════════════════════════════════════════════════════════════
+  quotidien:
+    name: contrôle quotidien (prod · provenance · parc)
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      PROD_URL: ${{ vars.PROD_URL }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: 'npm ci'
+        run: npm ci
+
+      - name: Le jeton Vercel est-il là ?
+        run: |
+          if [ -z "${VERCEL_TOKEN}" ]; then
+            echo "::error title=Jeton Vercel absent::Sans VERCEL_TOKEN, le contrôle du parc et celui de la provenance sont INERTES — pas verts. Ajoute-le dans Settings → Secrets and variables → Actions (jeton créé chez Vercel → Account Settings → Tokens)."
+            exit 1
+          fi
+
+      - name: Contrôle prod ↔ dépôt
+        run: |
+          set +e
+          npm run check:prod
+          code=$?
+          set -e
+          case "$code" in
+            0) echo "✅ La production Vercel sert le dépôt, sans secret en clair." ;;
+            1) echo "::warning title=Prod en retard sur le dépôt::La production ne sert pas encore le commit attendu — normal si un push vient d'arriver. Voir le résumé du job." ;;
+            3) echo "::error title=Clé d'API servie par la production::La livraison contient une valeur de forme secrète en clair. Révoquer la clé chez le fournisseur (ni une purge ni un redéploiement ne la dévalident), puis redéployer. Voir le résumé du job."; exit 1 ;;
+            *) echo "::warning title=check:prod indéterminable::Production injoignable ou sans tampon de commit (code $code)." ;;
+          esac
+          exit 0
+
+      - name: Contrôle de provenance (la prod vient-elle d'un commit ?)
+        run: |
+          set +e
+          npm run check:origine
+          code=$?
+          set -e
+          case "$code" in
+            0) echo "✅ La production a été construite par Git, depuis le commit attendu." ;;
+            1) echo "::warning title=Prod en retard sur le dépôt::Elle vient bien de Git, mais pas du commit attendu (code 1)." ;;
+            3) echo "::error title=Production publiée à la main::La production ne vient pas d'un commit. Pousse sur main pour que Vercel reconstruise depuis Git, et cesse d'utiliser 'vercel --prod' : une livraison faite à la main n'est ni reproductible, ni relisable en diff."; exit 1 ;;
+            *) echo "::warning title=check:origine indéterminable::Provenance non lue (code $code) — ce n'est PAS un succès." ;;
+          esac
+          exit 0
+
+      - name: Contrôle du parc (tous les déploiements)
+        run: |
+          set +e
+          npm run check:parc
+          code=$?
+          set -e
+          case "$code" in
+            0) echo "✅ Aucun déploiement du projet ne sert de valeur de forme secrète." ;;
+            3) echo "::error title=Un déploiement du parc sert une clé::Au moins un déploiement sert une valeur de forme secrète en clair. Révoquer la clé chez le fournisseur, puis supprimer les déploiements fautifs."; exit 1 ;;
+            *) echo "::warning title=check:parc indéterminable::Le parc n'a pas pu être balayé (code $code) — ce n'est PAS un succès." ;;
+          esac
+          exit 0

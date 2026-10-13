@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BuildPact — Feuille de route</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0a14;
+            --surface: #1a1a28;
+            --border: #2d2d42;
+            --text: #e5e5f0;
+            --muted: #a0a0b8;
+            --violet: #9945ff;
+            --green: #14f195;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 4rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff, var(--violet));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 1.1rem;
+        }
+
+        .roadmap {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .phase {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .phase:hover {
+            border-color: var(--violet);
+            box-shadow: 0 0 20px rgba(153, 69, 255, 0.1);
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .phase-header:hover {
+            color: var(--green);
+        }
+
+        .phase-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--violet), var(--green));
+            font-weight: 700;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .phase-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .phase-date {
+            margin-left: auto;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .phase-description {
+            color: var(--muted);
+            margin-bottom: 1.5rem;
+            line-height: 1.7;
+        }
+
+        .tasks {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .task {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(153, 69, 255, 0.05);
+            border-left: 3px solid var(--violet);
+            border-radius: 6px;
+        }
+
+        .task.completed {
+            opacity: 0.7;
+            background: rgba(16, 185, 129, 0.05);
+            border-left-color: var(--green);
+        }
+
+        .task-check {
+            margin-top: 0.25rem;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-text {
+            margin-bottom: 0.25rem;
+        }
+
+        .task-owner {
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        .milestone {
+            background: rgba(20, 241, 149, 0.1);
+            border: 1px solid var(--green);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+        }
+
+        .milestone-label {
+            color: var(--green);
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .phase {
+                padding: 1.5rem;
+            }
+
+            .phase-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .phase-date {
+                margin-left: 0;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+
+            .phase {
+                background: white;
+                border-color: #ddd;
+                page-break-inside: avoid;
+            }
+
+            .phase-number {
+                background: #f0f0f0;
+                color: black;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div role="note" style="margin:0;padding:14px 18px;background:#fff4d6;color:#3d2c00;border-bottom:3px solid #b7791f;font:15px/1.55 Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"><strong>⚠️ DOCUMENT HISTORIQUE — conservé tel quel.</strong> Feuille de route du <strong>hackathon (août 2026)</strong> : elle décrit l'app d'AVANT le shell premium et n'est plus à jour.  Référence actuelle : <code>ETAT-APP-2026-10-08-FR.html</code> (section « Carte des documents »).</div>
+<div class="container">
+        <header>
+            <h1>BuildPact</h1>
+            <p class="subtitle">Feuille de route — Hackathon NOAH 02 · Solana Devnet</p>
+        </header>
+
+        <div class="roadmap">
+            <!-- Phase 1 -->
+            <div class="phase">
+                <div class="phase-header">
+                    <div class="phase-number">1</div>
+                    <div>
+                        <div class="phase-title">Fondations on-chain</div>
+                    </div>
+                    <div class="phase-date">J-14 à J-7</div>
+                </div>
+                <p class="phase-description">
+                    Architecture de base du programme Solana. Structures de données, PDAs, instructions fondamentales.
+                </p>
+                <div class="tasks">
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Architecture Anchor — Project, Vault, Config PDAs avec seeds canoniques</div>
+                            <div class="task-owner">RUSTIK</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Instructions de base : create_project, add_member, approve, finalize</div>
+                            <div class="task-owner">RUSTIK</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Tests unitaires Anchor — cas nominaux et edge cases</div>
+                            <div class="task-owner">CIPHER</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Génération IDL et déploiement devnet initial</div>
+                            <div class="task-owner">AEGIS</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="milestone">
+                    <div class="milestone-label">🎯 Livrable</div>
+                    <div>Programme Solana opérationnel sur Devnet avec instructions core testées</div>
+                </div>
+            </div>
+
+            <!-- Phase 2 -->
+            <div class="phase">
+                <div class="phase-header">
+                    <div class="phase-number">2</div>
+                    <div>
+                        <div class="phase-title">Sécurité et optimisation</div>
+                    </div>
+                    <div class="phase-date">J-7 à J-3</div>
+                </div>
+                <p class="phase-description">
+                    Audit complet des instructions, vérifications de sécurité, optimisation des Compute Units.
+                </p>
+                <div class="tasks">
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Audit statique — signer checks, ownership checks, arithmetic overflow</div>
+                            <div class="task-owner">CIPHER</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Fuzzing et tests de pénétration on-chain</div>
+                            <div class="task-owner">CIPHER</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Optimisation CU — réduction des coûts de transaction</div>
+                            <div class="task-owner">RUSTIK</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Correction de la vulnérabilité protocole fee wallet</div>
+                            <div class="task-owner">RUSTIK + CIPHER</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="milestone">
+                    <div class="milestone-label">🔒 Livrable</div>
+                    <div>Rapport d'audit complet, Programme sécurisé et optimisé, déploiement mainnet prêt</div>
+                </div>
+            </div>
+
+            <!-- Phase 3 -->
+            <div class="phase">
+                <div class="phase-header">
+                    <div class="phase-number">3</div>
+                    <div>
+                        <div class="phase-title">Frontend Web — UX Premium</div>
+                    </div>
+                    <div class="phase-date">J-7 à J-2</div>
+                </div>
+                <p class="phase-description">
+                    Interface React accessible (WCAG 2.1 AA+), multilingue, responsive desktop et mobile.
+                </p>
+                <div class="tasks">
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Architecture React + Vite + TypeScript — composants réutilisables</div>
+                            <div class="task-owner">NEXUS</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Intégration Wallet Adapter — Phantom, Backpack, Solflare</div>
+                            <div class="task-owner">NEXUS</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Pages core : Dashboard, Create Pact, Marketplace, Builder Profile</div>
+                            <div class="task-owner">NEXUS</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Design system Tailwind + Dark mode ophthalmique</div>
+                            <div class="task-owner">VERA</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Audit accessibilité WCAG 2.1 AA — corrections appliquées</div>
+                            <div class="task-owner">VERA</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="milestone">
+                    <div class="milestone-label">🎨 Livrable</div>
+                    <div>dApp Web accessible, responsive, multilingue — prête pour production</div>
+                </div>
+            </div>
+
+            <!-- Phase 4 -->
+            <div class="phase">
+                <div class="phase-header">
+                    <div class="phase-number">4</div>
+                    <div>
+                        <div class="phase-title">Internationalisation et contenu</div>
+                    </div>
+                    <div class="phase-date">J-3 à J-1</div>
+                </div>
+                <p class="phase-description">
+                    Support multilingue (FR/EN), glossaires, documentation technique, vidéos.
+                </p>
+                <div class="tasks">
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Architecture i18n next-intl — setup par locale</div>
+                            <div class="task-owner">LINGUA</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Traduction complète FR/EN — UI, docs, événements on-chain</div>
+                            <div class="task-owner">LINGUA</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Glossaire Web3 propriétaire (staking, slippage, rent, PDA...)</div>
+                            <div class="task-owner">LINGUA</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Documentation technique (GitBook) et guide utilisateur</div>
+                            <div class="task-owner">LINGUA + ECHO</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Vidéo démo (3 min) et storyboard de présentation</div>
+                            <div class="task-owner">ECHO</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="milestone">
+                    <div class="milestone-label">📚 Livrable</div>
+                    <div>App multilingue, documentation complète, matériel marketing prêt</div>
+                </div>
+            </div>
+
+            <!-- Phase 5 -->
+            <div class="phase">
+                <div class="phase-header">
+                    <div class="phase-number">5</div>
+                    <div>
+                        <div class="phase-title">Feature premium — Discovery & Marketplace</div>
+                    </div>
+                    <div class="phase-date">J-2 à J-0</div>
+                </div>
+                <p class="phase-description">
+                    Marketplace de projets, annuaire des builders, chat, vault documents, profil sécurisé.
+                </p>
+                <div class="tasks">
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Marketplace — cards, filtres, pagination, tri</div>
+                            <div class="task-owner">NEXUS</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Annuaire builders — recherche, notation, disponibilité</div>
+                            <div class="task-owner">NEXUS</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Profil builder sécurisé — signMessage, Edge Function, export PDF</div>
+                            <div class="task-owner">NEXUS + CIPHER</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Chat Realtime par projet et fil d'avancement</div>
+                            <div class="task-owner">NEXUS</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Vault documents privés avec historique de versions</div>
+                            <div class="task-owner">NEXUS</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Médias projet — logo, bannière, vidéo</div>
+                            <div class="task-owner">NEXUS</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="milestone">
+                    <div class="milestone-label">⭐ Livrable</div>
+                    <div>Plateforme complète avec features premium au-delà du MVP initial</div>
+                </div>
+            </div>
+
+            <!-- Phase 6 -->
+            <div class="phase">
+                <div class="phase-header">
+                    <div class="phase-number">6</div>
+                    <div>
+                        <div class="phase-title">Déploiement, audit final et candidature</div>
+                    </div>
+                    <div class="phase-date">J-0</div>
+                </div>
+                <p class="phase-description">
+                    Vérifications finales, déploiement, audit de sécurité complet, candidature hackathon.
+                </p>
+                <div class="tasks">
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Vérification end-to-end — create → fund → distribute</div>
+                            <div class="task-owner">AEGIS</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Audit sécurité complet NOAH Platform</div>
+                            <div class="task-owner">CIPHER</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Déploiement Vercel (frontend) + Devnet (programme)</div>
+                            <div class="task-owner">AEGIS</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Rédaction et validation candidature hackathon</div>
+                            <div class="task-owner">ECHO</div>
+                        </div>
+                    </div>
+                    <div class="task completed">
+                        <div class="task-check">✅</div>
+                        <div class="task-content">
+                            <div class="task-text">Documentation finale + README complet</div>
+                            <div class="task-owner">LINGUA + ECHO</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="milestone">
+                    <div class="milestone-label">🚀 Livrable</div>
+                    <div>Projet finalisé, audité, déployé — candidature envoyée</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value">6</div>
+                <div class="stat-label">Phases</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">30+</div>
+                <div class="stat-label">Tâches complétées</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">7</div>
+                <div class="stat-label">Agents IA Senior</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">100%</div>
+                <div class="stat-label">Status</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,848 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════════════
+   THÈMES D'ACCENT — voir src/lib/theme.ts
+
+   Deux axes INDÉPENDANTS : la palette d'accent (violet/cyan/coral,
+   [data-theme]) et le mode clair/sombre (canvas/ink, [data-mode],
+   ajouté sur demande explicite malgré le risque noté ci-dessous — les
+   effets pensés pour du noir (glow, glass-panel, orbes) n'ont PAS tous
+   été retouchés pour le clair, voir le bloc [data-mode='light'] plus bas
+   pour la liste de ce qui est couvert.
+
+   ⚠️ Format obligatoire : CANAUX RGB SÉPARÉS, sans fonction rgb().
+   tailwind.config.js déclare `rgb(var(--accent-violet-rgb) / <alpha-value>)`
+   pour que `bg-accent-violet/20` continue de marcher. Mettre un hex ici
+   casserait tous les modificateurs d'opacité du projet, silencieusement.
+
+   Ces règles sont hors de @layer base volontairement : les variables
+   doivent gagner sur tout, quel que soit l'ordre des couches.
+
+   ⚠️ --accent-neon-rgb n'est JAMAIS réécrit par une palette : le vert
+   signale un mouvement de SOL (fund / distribute / claim, voir .btn-neon)
+   dans toute l'app. Le faire varier casserait un repère appris par
+   l'utilisateur. Seuls le primaire (violet) et le secondaire (gold)
+   changent — voir src/lib/theme/palettes.ts.
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  /* Rôle « argent » — fixe, hors palette. */
+  --accent-neon-rgb: 20 241 149;
+}
+
+:root,
+[data-theme='violet'] {
+  --accent-violet-rgb: 153 69 255;
+  --accent-gold-rgb: 255 215 0;
+}
+
+[data-theme='cyan'] {
+  --accent-violet-rgb: 34 211 238;
+  --accent-gold-rgb: 165 243 252;
+}
+
+[data-theme='coral'] {
+  --accent-violet-rgb: 251 113 133;
+  --accent-gold-rgb: 253 186 116;
+}
+
+/* Aurum — or comme rôle primaire, parchemin en highlight. Canevas sombre
+   réchauffé plus bas (voir bloc [data-theme='aurum']:not([data-mode='light'])). */
+[data-theme='aurum'] {
+  --accent-violet-rgb: 232 184 75;
+  --accent-gold-rgb: 230 214 178;
+}
+
+/* Atelier — accent VIOLET CONSERVÉ à l'identique (voir theme.ts) : sa
+   distinction ne vient pas de la teinte d'accent mais du canevas ivoire/encre
+   ci-dessous, appliqué quel que soit [data-mode]. */
+[data-theme='atelier'] {
+  --accent-violet-rgb: 153 69 255;
+  --accent-gold-rgb: 255 215 0;
+}
+
+/* Nova — 19/09, palette "vive et fun" demandée en plus des tons existants
+   (violet/cyan/aurum restent plutôt sobres). Magenta électrique en rôle
+   primaire + lime en rôle secondaire : le duo le plus saturé du lot,
+   pensé pour un profil qui veut se démarquer visuellement. Canevas
+   standard (pas d'override [data-theme='nova'] plus bas) : c'est l'accent
+   qui porte toute la différence, comme violet/cyan. */
+[data-theme='nova'] {
+  --accent-violet-rgb: 255 46 147;
+  --accent-gold-rgb: 212 255 61;
+}
+
+/* Volta — 21/09, habillage validé (prototype v3). Émeraude en rôle
+   primaire : distinct du vert néon "argent" (20 241 149, jamais réécrit)
+   pour que les repères fund/distribute restent univoques. */
+[data-theme='volta'] {
+  --accent-violet-rgb: 16 185 129;
+  --accent-gold-rgb: 255 207 90;
+}
+
+/* Ember — 21/09, habillage validé (prototype v3). Ambre chaud comme
+   aurum mais canevas standard (différenciation par la teinte pure,
+   pas le canevas). */
+[data-theme='ember'] {
+  --accent-violet-rgb: 255 207 90;
+  --accent-gold-rgb: 255 138 76;
+}
+
+/* Version assombrie du primaire, utilisée comme fin de dégradé sur les
+   boutons. Calculée plutôt que codée en dur : sinon chaque nouveau thème
+   imposerait de choisir manuellement sa nuance foncée, et une omission ne
+   se verrait qu'à l'œil. */
+:root {
+  --accent-primary-deep: color-mix(in oklch, rgb(var(--accent-violet-rgb)) 78%, #000);
+  --accent-money-deep: color-mix(in oklch, rgb(var(--accent-neon-rgb)) 74%, #000);
+}
+
+/* Échelle d'élévation — surface-1/2/3, du plus profond au plus proche du
+   premier plan. Aliasées sur --accent-violet-rgb plutôt que codées en dur :
+   une variable CSS peut référencer une autre variable CSS, donc les
+   surfaces se reteintent automatiquement avec la palette active (violet,
+   cyan, aurum...) sans dupliquer une valeur par palette. Consommées en
+   `rgb(var(--surface-N-rgb) / alpha)`, alpha faible car ce sont des fonds,
+   pas des accents. */
+:root {
+  --surface-1-rgb: var(--accent-violet-rgb);
+  --surface-2-rgb: var(--accent-violet-rgb);
+  --surface-3-rgb: var(--accent-violet-rgb);
+}
+
+/* Intensité des halos/glow — voir src/lib/theme.ts (GlowStrength,
+   applyGlowStrength). Variable CONTINUE (0 à 1), pas un data-attribute :
+   posée via style.setProperty au lieu d'un attribut CSS discret, parce
+   qu'elle est multipliée dans des calc() plutôt que sélectionnée par bloc.
+   1 par défaut ici pour que les éléments déjà en place (avant que
+   l'utilisateur n'ouvre les réglages) gardent leur halo plein. */
+:root {
+  --glow-strength: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MODE CLAIR / SOMBRE — voir src/lib/theme.ts (Mode, applyMode)
+
+   Même format que les accents : canaux RGB séparés, jamais un hex, pour
+   que `bg-canvas-800/60` etc. continuent de fonctionner sous les deux
+   modes. `:root` = sombre (valeurs historiques, identiques à avant ce
+   changement — le mode sombre ne bouge pas d'un pixel).
+
+   Portée honnête de ce que ce bloc couvre : les surfaces (canvas-*) et le
+   texte secondaire/muet (ink-*). Le texte `text-white` (titres, CTA) est
+   couvert séparément juste en dessous — Tailwind fige `white` en dur, ce
+   n'est pas une variable, d'où la règle ciblée sur la classe elle-même.
+   Les glows/ombres accordées au noir (`.btn-primary`, orbes, grid-bg) ne
+   sont PAS retouchés ici : ils resteront visuellement plus faibles en
+   clair, c'est un compromis assumé plutôt qu'un oubli. */
+:root {
+  --text-primary-rgb: 255 255 255;
+  --canvas-900-rgb: 3 3 8;
+  --canvas-800-rgb: 10 10 20;
+  --canvas-700-rgb: 18 18 34;
+  --ink-900-rgb: 10 10 20;
+  --ink-500-rgb: 111 111 138;
+  --ink-400-rgb: 139 139 163;
+  --ink-300-rgb: 168 168 189;
+  --ink-200-rgb: 201 201 216;
+  --ink-100-rgb: 230 230 239;
+}
+
+[data-mode='light'] {
+  --text-primary-rgb: 10 10 20;
+  --canvas-900-rgb: 248 248 252;
+  --canvas-800-rgb: 238 238 245;
+  --canvas-700-rgb: 226 226 237;
+  --ink-900-rgb: 10 10 20;
+  --ink-500-rgb: 92 92 114;
+  --ink-400-rgb: 71 71 92;
+  --ink-300-rgb: 52 52 74;
+  --ink-200-rgb: 35 35 54;
+  --ink-100-rgb: 20 20 31;
+}
+
+/* Filet de sécurité, désormais redondant : `white` est redéfini sur
+   --text-primary-rgb dans tailwind.config.js, ce qui couvre AUSSI les
+   variantes (`hover:text-white`, `text-white/70`, `border-white/10`) que
+   cette règle ne pouvait pas atteindre — elle ne matche que la classe nue.
+   Conservée telle quelle : même valeur, aucun conflit, et elle rattrape le
+   cas d'un `.text-white` écrit à la main hors Tailwind. */
+[data-mode='light'] .text-white {
+  color: rgb(var(--text-primary-rgb));
+}
+
+/* Aurum — noir chaud en mode sombre uniquement (le mode clair d'Aurum
+   reprend le canevas clair standard, seul l'accent or le distingue).
+   Spécificité (0,2,0) via :not(), gagne sur les :root (0,1,0) sans
+   dépendre de l'ordre des règles. */
+[data-theme='aurum']:not([data-mode='light']) {
+  --canvas-900-rgb: 11 10 8;
+  --canvas-800-rgb: 20 18 14;
+  --canvas-700-rgb: 30 27 20;
+}
+
+/* Atelier — ivoire/encre appliqué QUEL QUE SOIT [data-mode] : c'est le
+   seul thème pensé pour rester "clair" même quand le reste de l'app est en
+   mode sombre ("accent conservé", canevas non). Placé APRÈS le bloc
+   [data-mode='light'] : à spécificité égale (0,1,0 chacun), la règle la
+   plus tardive dans le fichier l'emporte, donc Atelier gagne aussi contre
+   le mode clair standard — pas seulement contre le mode sombre. */
+[data-theme='atelier'] {
+  --text-primary-rgb: 26 24 20;
+  --canvas-900-rgb: 247 244 238;
+  --canvas-800-rgb: 240 236 227;
+  --canvas-700-rgb: 230 225 213;
+  --ink-900-rgb: 26 24 20;
+  --ink-500-rgb: 92 86 74;
+  --ink-400-rgb: 71 66 56;
+  --ink-300-rgb: 52 48 40;
+  --ink-200-rgb: 35 32 27;
+  --ink-100-rgb: 20 18 15;
+}
+
+/* Voir commentaire sur [data-mode='light'] .text-white plus haut : même
+   raison d'être, pour le cas où Atelier est actif alors que [data-mode]
+   vaut encore 'dark' (défaut) — sans cette règle, les titres/CTA en
+   `text-white` resteraient blancs sur fond ivoire. */
+[data-theme='atelier'] .text-white {
+  color: rgb(var(--text-primary-rgb));
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FILET DE SÉCURITÉ — badge « Made with Noah AI »
+
+   La cause a été retirée (le <script> de content.trynoah.ai dans
+   index.html). Ces règles ne servent que dans un cas : l'aperçu de
+   l'éditeur, qui réinjecte parfois son propre badge indépendamment du
+   HTML du projet. En build de production, elles ne matchent rien.
+
+   ⚠️ Volontairement CIBLÉES sur un lien vers trynoah.* et non sur un
+   `[class*="badge"]` : une règle large masquerait aussi nos propres
+   badges (RankBadge…) sans qu'on comprenne pourquoi.
+   ═══════════════════════════════════════════════════════════════════ */
+a[href*="trynoah"],
+a[href*="noah.ai"],
+[data-noah-badge],
+#noah-badge {
+  display: none !important;
+}
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here.
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  /* BuildPact est une UI sombre par nature (index.html declare deja
+     theme-color #030308). On force le fond ici plutot que via la classe .dark
+     de shadcn : les composants du wizard utilisent directement les tokens
+     canvas et ink, pas les variables --background.
+     NB : ne jamais ecrire une paire asterisque-slash dans un commentaire CSS
+     (ex. en abregeant "canvas-* / ink-*") — elle referme le commentaire sur
+     place et le reste de la ligne est parse comme un selecteur, ce qui casse
+     tout le fichier avec un "[postcss] Unexpected '/'". */
+  body {
+    background-color: rgb(var(--canvas-900-rgb));
+    color: rgb(var(--text-primary-rgb));
+    font-family: 'Space Grotesk', sans-serif;
+  }
+}
+
+@layer components {
+  /* Surface translucide utilisée par le wizard (PactStep3, CreatePactWizard).
+     Le glassmorphism n'est acceptable que sur fond sombre — ici le fond est
+     #030308, il y a donc assez de profondeur pour que la réfraction lise. */
+  .glass-panel {
+    background-color: rgb(var(--surface-1-rgb) / 0.05);
+    /* Bordure sur --text-primary-rgb et non un blanc fixe : en Atelier /
+       mode clair, un liseré blanc sur fond ivoire est invisible et la
+       carte perd tout contour — elle « disparaît » sans erreur. */
+    border: 1px solid rgb(var(--text-primary-rgb) / 0.07);
+    border-radius: 1rem;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Surface OPAQUE des éléments flottants — modales (Paramètres, Journal
+     de quêtes), bulles d'aide (InfoTooltip), popovers.
+
+     Le pendant exact de .glass-panel, et le contraire de son intention :
+     pas de `backdrop-filter`, pas de fond translucide. Un panneau
+     translucide est lisible parce qu'il repose sur un fond de page déjà
+     décoré (orbes, dégradés) ; à 5 % d'alpha ça se lit très mal en mode
+     clair ou avec le fond « Uni »/« Grille » (rien derrière pour donner de
+     la matière), et le voile bg-black/70 de la modale par-dessus donne un
+     gris délavé où on distingue à peine le panneau du reste de la page.
+
+     `--canvas-800-rgb` est DÉJÀ theme-aware (clair/sombre, et
+     Aurum/Atelier le réécrivent aussi) — l'utiliser à alpha 1 donne un
+     panneau franchement opaque quel que soit le thème actif, sans réglage
+     par cas. */
+  .modal-surface {
+    background-color: rgb(var(--canvas-800-rgb) / 1);
+    border: 1px solid rgb(var(--text-primary-rgb) / 0.09);
+    border-radius: 1rem;
+  }
+
+  /* surface-2/3 : mêmes tokens, alpha croissante — pour un panneau qui doit
+     se détacher d'un .glass-panel parent (ex. une carte dans une modale). */
+  .surface-2 {
+    background-color: rgb(var(--surface-2-rgb) / 0.08);
+  }
+
+  .surface-3 {
+    background-color: rgb(var(--surface-3-rgb) / 0.12);
+  }
+
+  /* Variante interactive (StatsCard). La transition porte sur border et
+     background uniquement : animer le blur coûte cher et fait tressauter
+     le rendu sur mobile. */
+  .glass-panel-hover {
+    transition:
+      border-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+      background-color 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-panel-hover:hover {
+    border-color: rgb(var(--accent-violet-rgb) / 0.35);
+    background-color: rgb(var(--text-primary-rgb) / 0.06);
+  }
+
+  /* Bouton d'action principal — EmptyState, PactsPage, wizard.
+     Le dégradé est légèrement décalé en teinte (violet → indigo) plutôt que
+     violet → rose : un dégradé violet-rose est le marqueur visuel le plus
+     reconnaissable d'une UI générée, et on cherche exactement l'inverse. */
+  .btn-primary {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.75rem;
+    padding: 0 1.25rem;
+    border-radius: 0.75rem;
+    background-image: linear-gradient(
+      135deg,
+      rgb(var(--accent-violet-rgb)) 0%,
+      var(--accent-primary-deep) 100%
+    );
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 700;
+    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.12) inset;
+    transition:
+      box-shadow 220ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 220ms cubic-bezier(0.4, 0, 0.2, 1),
+      filter 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+    box-shadow:
+      0 1px 0 0 rgba(255, 255, 255, 0.18) inset,
+      0 8px 24px -6px rgb(var(--accent-violet-rgb) / calc(0.55 * var(--glow-strength)));
+  }
+
+  .btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* Pendant vert des actions liées à l'argent — fund, distribute, claim.
+     Séparer la couleur de l'action monétaire de l'action de navigation aide
+     à lire un pact d'un coup d'œil : le vert = un mouvement de SOL. */
+  .btn-neon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.75rem;
+    padding: 0 1.25rem;
+    border-radius: 0.75rem;
+    background-image: linear-gradient(
+      135deg,
+      rgb(var(--accent-neon-rgb)) 0%,
+      var(--accent-money-deep) 100%
+    );
+    /* Texte sombre : l'accent « argent » est un vert clair très saturé,
+       du blanc dessus tomberait sous le seuil de contraste. */
+    color: #04140d;
+    font-size: 0.875rem;
+    font-weight: 700;
+    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.25) inset;
+    transition:
+      box-shadow 220ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 220ms cubic-bezier(0.4, 0, 0.2, 1),
+      filter 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-neon:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.06);
+    box-shadow:
+      0 1px 0 0 rgba(255, 255, 255, 0.3) inset,
+      0 8px 24px -6px rgb(var(--accent-neon-rgb) / calc(0.5 * var(--glow-strength)));
+  }
+
+  .btn-neon:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  .btn-neon:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* Relief au survol des grilles de cards (Pacts, Marketplace).
+     Une grille de panneaux translucides tous identiques se lit comme un mur :
+     le lift + halo violet donne la profondeur qui manquait, sans rien changer
+     au contenu ni au comportement. */
+  .card-lift {
+    transition:
+      transform 260ms cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 260ms cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 260ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-lift:hover {
+    transform: translateY(-3px);
+    border-color: rgb(var(--accent-violet-rgb) / 0.32);
+    box-shadow:
+      0 18px 44px -18px rgb(var(--accent-violet-rgb) / calc(0.5 * var(--glow-strength))),
+      0 0 0 1px rgb(var(--accent-violet-rgb) / 0.08);
+  }
+
+  /* Placeholder de chargement pendant le fetch RPC. Volontairement discret :
+     un shimmer trop marqué se lit comme du contenu réel. */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgb(var(--text-primary-rgb) / 0.04) 25%,
+      rgb(var(--text-primary-rgb) / 0.08) 37%,
+      rgb(var(--text-primary-rgb) / 0.04) 63%
+    );
+    background-size: 400% 100%;
+    border-radius: 0.75rem;
+    animation: skeleton-sweep 1.4s ease-in-out infinite;
+  }
+
+  /* Grille de fond du layout — pur CSS, aucune image à charger. */
+  .grid-bg {
+    background-image:
+      linear-gradient(rgb(var(--accent-violet-rgb) / 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--accent-violet-rgb) / 0.06) 1px, transparent 1px);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(ellipse at 50% 0%, #000 30%, transparent 75%);
+    mask-image: radial-gradient(ellipse at 50% 0%, #000 30%, transparent 75%);
+  }
+
+  /* 21/09 (demande utilisateur) : la grille de fond est propre au mode
+     SOMBRE — sur le canevas clair (fonds blancs) elle devenait du bruit
+     visuel moiré et dégradait la lecture. Retirée en clair, conservée en
+     sombre (signature visuelle du produit). */
+  [data-mode='light'] .grid-bg {
+    background-image: none;
+  }
+
+  /* Fond "Aurore" — une bande diagonale de lumière qui dérive très
+     lentement (36s/cycle) en travers de l'écran. Alternative aux orbes
+     pour qui veut du mouvement sans la lecture "planètes flottantes". */
+  .bg-aurora-sweep {
+    position: absolute;
+    inset: -20% -20%;
+    background: linear-gradient(
+      115deg,
+      transparent 30%,
+      rgb(var(--accent-violet-rgb) / 0.22) 45%,
+      rgb(var(--accent-neon-rgb) / 0.16) 55%,
+      transparent 70%
+    );
+    background-size: 200% 200%;
+    animation: aurora-drift 36s ease-in-out infinite;
+  }
+
+  @keyframes aurora-drift {
+    0%,
+    100% {
+      background-position: 0% 20%;
+    }
+    50% {
+      background-position: 100% 80%;
+    }
+  }
+
+  /* Fond "Scanlines" — lignes horizontales fines façon terminal rétro,
+     teintées de l'accent courant. Statique par défaut ; le léger défilé
+     vertical (scanline-drift) est ce qui vend l'effet "écran CRT" sans
+     dépendre d'une image. */
+  .bg-scanlines {
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      0deg,
+      rgb(var(--accent-violet-rgb) / 0.05) 0px,
+      rgb(var(--accent-violet-rgb) / 0.05) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    animation: scanline-drift 9s linear infinite;
+  }
+
+  @keyframes scanline-drift {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 0 120px;
+    }
+  }
+}
+
+@keyframes skeleton-sweep {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   JOURNAL DE QUÊTES — animations (QuestBoard.tsx, ClaimBurst.tsx)
+
+   Hors @layer components volontairement, comme skeleton-sweep : ces
+   règles sont consommées via des classes écrites en dur dans le JSX, pas
+   via @apply, et doivent gagner sur l'ordre des couches.
+
+   ⚠️ Aucune de ces classes ne provoque d'erreur si elle manque. Le cas le
+   plus trompeur est .quest-burst-particle : sans elle, les 8 particules se
+   montent toutes au centre, sans transform — l'éclat ne se voit tout
+   simplement pas, et rien n'indique pourquoi.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Éclat de réclamation. Chaque particule lit son propre --burst-angle,
+   posé en style inline par ClaimBurst : une seule @keyframes suffit donc
+   pour les 8 directions, au lieu de 8 variantes. */
+@keyframes quest-burst {
+  0% {
+    opacity: 1;
+    transform: rotate(var(--burst-angle, 0deg)) translateY(0) scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--burst-angle, 0deg)) translateY(-26px) scale(1.4);
+  }
+}
+
+.quest-burst-particle {
+  animation: quest-burst 650ms ease-out forwards;
+}
+
+/* Pulsation de la pastille réclamable — la seule animation en boucle du
+   journal. C'est l'appel à l'action : une quête terminée mais non
+   réclamée ne doit pas pouvoir être manquée.
+
+   ⚠️ Écart assumé avec by7b : la source code ce halo en rgba(232, 184, 75)
+   en dur (l'or de la palette aurum). Gardé en rgb(var(--accent-gold-rgb))
+   pour suivre la palette active — sinon, en palette cyan, une pastille
+   bleu glacier pulse en or chaud. Même rendu exact en aurum, différent
+   (et voulu) ailleurs. */
+@keyframes quest-ring-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgb(var(--accent-gold-rgb) / 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgb(var(--accent-gold-rgb) / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(var(--accent-gold-rgb) / 0);
+  }
+}
+
+.quest-badge-claimable {
+  animation: quest-ring-pulse 2200ms ease-out infinite;
+}
+
+/* Entrée en cascade des lignes. Le décalage vient de --row-delay, calculé
+   par index dans QuestBoard (90 ms par ligne) — la cascade se lit comme un
+   déroulé de parchemin plutôt que comme trois blocs qui apparaissent. */
+@keyframes quest-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.quest-row-enter {
+  animation: quest-row-in 320ms ease-out both;
+  animation-delay: var(--row-delay, 0ms);
+}
+
+/* Flash au moment exact où une quête passe de « en cours » à
+   « réclamable » (détecté par comparaison avec l'état précédent dans
+   QuestBoard). Distinct de quest-ring-pulse (boucle continue tant que non
+   réclamée) : celui-ci ne joue qu'une fois, marque l'instant plutôt que
+   l'état. Le cubic-bezier dépasse 1 volontairement : le léger rebond
+   signale un franchissement de seuil. Scale + flash lumineux, pas de
+   translation — ce qui le rend « safe » sous reduced-motion, où il est
+   simplement neutralisé plus bas. */
+@keyframes quest-unlock-flash {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgb(var(--accent-gold-rgb) / 0);
+  }
+  35% {
+    transform: scale(1.35);
+    box-shadow: 0 0 16px 4px rgb(var(--accent-gold-rgb) / 0.7);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgb(var(--accent-gold-rgb) / 0);
+  }
+}
+
+.quest-badge-unlock {
+  animation: quest-unlock-flash 700ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* XpBar (30/08) — reflet en continu sur la portion remplie de la barre XP,
+   même intention que quest-ring-pulse : donner de la vie à un élément qui,
+   sinon, ne bouge qu'une fois toutes les 700 ms (au changement de largeur).
+   Bande semi-transparente inclinée qui balaie de gauche à droite en boucle
+   lente — assez subtile pour ne pas distraire d'une jauge de progression. */
+@keyframes xpbar-shimmer-sweep {
+  0% {
+    transform: translateX(0%) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(400%) skewX(-20deg);
+  }
+}
+
+.xpbar-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.55),
+    transparent
+  );
+  animation: xpbar-shimmer-sweep 2600ms ease-in-out infinite;
+}
+
+/* Flash « changement de rang » — one-shot au moment où XpBar détecte que le
+   rang calculé a changé entre deux fetch (même mécanique de diff par ref
+   que quest-unlock-flash ci-dessus, appliquée au libellé de rang plutôt
+   qu'à un badge de quête).
+
+   Même écart assumé que quest-ring-pulse : text-shadow passé en
+   var(--accent-gold-rgb) au lieu du 232 184 75 en dur de by7b. */
+@keyframes xpbar-levelup-flash {
+  0% {
+    transform: scale(1);
+    text-shadow: 0 0 0 rgb(var(--accent-gold-rgb) / 0);
+  }
+  30% {
+    transform: scale(1.25);
+    text-shadow: 0 0 12px rgb(var(--accent-gold-rgb) / 0.9);
+  }
+  100% {
+    transform: scale(1);
+    text-shadow: 0 0 0 rgb(var(--accent-gold-rgb) / 0);
+  }
+}
+
+.xpbar-levelup-flash {
+  animation: xpbar-levelup-flash 900ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Transition d'entrée de page (30/08) — la navigation entre routes était
+   un remplacement instantané du DOM, sans aucune transition. Rejoue à
+   chaque changement de route : le wrapper dans App.tsx est keyé sur la
+   route (remount = animation rejouée), pas de logique JS de timing. Reste
+   volontairement discret (8px, 260ms) — un swap de page n'est pas un
+   moment qu'on veut faire durer. */
+@keyframes page-transition-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-transition-in {
+  animation: page-transition-in 260ms ease-out both;
+}
+
+/* On fige les animations d'ambiance plutôt que de les ralentir : une dérive
+   lente reste perçue et provoque la même gêne vestibulaire.
+
+   Bloc UNIQUE pour tout le projet — les règles quest-* et xpbar-* sont ici,
+   pas dans un second @media en bas de fichier : deux blocs qui traitent le
+   même sujet divergent à la première modification. */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .animate-float,
+  .bg-aurora-sweep,
+  .bg-scanlines {
+    animation: none;
+  }
+
+  /* Contrairement aux animations d'ambiance ci-dessus (figées mais
+     visibles), l'éclat de particules n'a aucun sens statique. Ses
+     particules sont en `forwards` sur une keyframe qui les fait
+     disparaître ; sans animation elles retombent sur leur état par défaut
+     — 8 pastilles opaques empilées au centre de la ligne, visibles
+     jusqu'au démontage. `display: none` est le seul neutralisant correct
+     ici. */
+  .quest-burst-particle {
+    display: none;
+  }
+
+  /* Anneau pulsant : boucle infinie, mais son état à 0% est un box-shadow
+     nul — le figer ne laisse aucun artefact, contrairement au burst. */
+  .quest-badge-claimable {
+    animation: none;
+  }
+
+  /* L'entrée en cascade et la transition de page sont des déplacements
+     UNIQUES au montage, pas des boucles — neutralisées quand même, le
+     contenu apparaît alors directement à sa place. */
+  .quest-row-enter {
+    animation: none;
+  }
+
+  .quest-badge-unlock {
+    animation: none;
+  }
+
+  .page-transition-in {
+    animation: none;
+  }
+
+  /* Reflet en boucle infinie — masqué plutôt que figé : une bande blanche
+     à 55 % arrêtée en travers de la jauge se lirait comme un artefact de
+     rendu, pas comme un choix. */
+  .xpbar-shimmer {
+    display: none;
+  }
+
+  .xpbar-levelup-flash {
+    animation: none;
+  }
+
+  /* Le halo peut rester (il n'implique aucun déplacement), mais le lift et
+     l'enfoncement des boutons sont des mouvements : on les neutralise. */
+  .card-lift:hover,
+  .btn-primary:hover:not(:disabled),
+  .btn-neon:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* Wallet button */
+.wallet-adapter-button-trigger {
+  color: #ffffff !important;
+}

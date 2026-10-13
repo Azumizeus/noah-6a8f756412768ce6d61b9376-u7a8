@@ -1,0 +1,261 @@
+<title>BuildPact Vérifié</title>
+<style>
+:root{
+  --bg:#080b14; --panel:#101827cc; --panel-solid:#101827; --line:#26354b;
+  --ink:#edf4ff; --muted:#aab8ca; --muted2:#7e8ba0;
+  --violet:#9b6cff; --mint:#20e0a0; --amber:#ffd166; --red:#ff718b; --cyan:#63d9ff;
+  --ok-bg:#20e0a01f; --ok-fg:#20e0a0;
+  --hyp-bg:#ffd16624; --hyp-fg:#ffd166;
+  --risk-bg:#ff718b25; --risk-fg:#ff718b;
+  --shadow:0 22px 60px #0008;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; min-height:100vh; background:
+    radial-gradient(circle at 10% 0%, #26305a 0, var(--bg) 34%), var(--bg);
+  color:var(--ink); line-height:1.6; padding-bottom:60px;
+}
+.wrap{width:min(1080px, calc(100% - 32px)); margin:auto; padding:28px 0}
+header.top{
+  display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between;
+  gap:16px; border-bottom:1px solid var(--line); padding-bottom:22px; margin-bottom:24px;
+}
+.brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:14px; letter-spacing:.18em}
+.mark{display:inline-grid; place-items:center; width:30px; height:30px; border-radius:9px;
+  background:linear-gradient(135deg,var(--violet),var(--mint)); color:#081018;}
+h1{font-size:clamp(26px,4vw,38px); margin:6px 0 8px; letter-spacing:-.03em; line-height:1.1}
+.lede{color:var(--muted); max-width:640px; font-size:15px; margin:0}
+.meta{font-size:12px; color:var(--muted2); margin-top:10px}
+
+.tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:22px; border-bottom:1px solid var(--line); padding-bottom:14px}
+.tab{
+  font:700 13px inherit; cursor:pointer; border:1px solid #ffffff22; border-radius:10px;
+  padding:10px 16px; background:#ffffff0a; color:var(--ink); transition:.15s;
+}
+.tab:hover{border-color:var(--mint)}
+.tab.active{background:var(--violet); border-color:var(--violet); color:#0a0a14}
+.tab .n{opacity:.7; font-weight:600; margin-left:5px}
+
+.doc{display:none}
+.doc.active{display:block; animation:fade .25s ease}
+@keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:translateY(0)}}
+
+.doc-intro{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:20px 22px; margin-bottom:20px; box-shadow:var(--shadow)}
+.doc-intro h2{margin:0 0 8px; font-size:20px}
+.doc-intro p{margin:0; color:var(--muted); font-size:14px}
+.doc-intro .flag{display:inline-flex; align-items:center; gap:6px; margin-top:10px; font-size:12px; color:var(--amber); background:var(--hyp-bg); border-radius:99px; padding:4px 10px}
+
+h3.section-h{font-size:13px; text-transform:uppercase; letter-spacing:.12em; color:var(--mint); margin:26px 0 12px}
+
+.card{
+  background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px 20px;
+  margin-bottom:12px;
+}
+.card .q{font-size:13px; color:var(--muted2); font-style:italic; margin:0 0 8px}
+.card .q:before{content:"« "}
+.card .q:after{content:" »"}
+.status{display:inline-flex; align-items:center; gap:5px; font:800 11px inherit; border-radius:99px; padding:4px 10px; margin-bottom:10px}
+.status.ok{background:var(--ok-bg); color:var(--ok-fg)}
+.status.partial{background:var(--hyp-bg); color:var(--hyp-fg)}
+.status.open{background:var(--risk-bg); color:var(--risk-fg)}
+.card .answer{font-size:14.5px; color:var(--ink)}
+.card .answer b{color:#fff}
+.card .src{margin-top:10px; font-size:12px}
+.card .src a{color:var(--cyan); text-decoration:underline; text-decoration-color:#63d9ff55}
+.card .doubt{
+  margin-top:10px; border-left:3px solid var(--red); background:#ff718b12; padding:10px 12px;
+  font-size:13px; color:#ffc3ce; border-radius:0 8px 8px 0;
+}
+.card .doubt b{color:var(--red)}
+
+.grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin:14px 0}
+.stat{background:#ffffff08; border:1px solid #ffffff14; border-radius:12px; padding:14px}
+.stat .v{font:800 20px ui-monospace,monospace; color:#fff}
+.stat .l{font-size:12px; color:var(--muted); margin-top:2px}
+.stat .d{font-size:11px; color:var(--muted2); margin-top:6px}
+
+.meta-doubt{
+  background:linear-gradient(145deg,#2a1830e8,#180f22e8); border:1px solid #ff718b40; border-radius:16px;
+  padding:20px 22px; margin-top:26px;
+}
+.meta-doubt h3{margin:0 0 10px; color:var(--red); font-size:15px}
+.meta-doubt ul{margin:0; padding-left:20px; color:var(--muted); font-size:14px}
+.meta-doubt li{margin-bottom:8px}
+
+footer.foot{color:var(--muted2); font-size:12px; border-top:1px solid var(--line); padding-top:18px; margin-top:32px}
+
+@media(max-width:640px){ .wrap{padding:20px 0} }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="brand"><span class="mark">✦</span>BUILDPACT</div>
+      <h1>Ce que les 3 docs ne disaient pas</h1>
+      <p class="lede">Étude de marché, positionnement produit, spécifications techniques — pour chaque hypothèse que ces documents signalaient comme « à valider », voici la réponse trouvée, ou une explication claire de pourquoi elle ne peut pas encore l'être.</p>
+      <p class="meta">Analyse du 21 août 2026 · recherche web pour les données de marché et concurrentielle · relecture du vrai code du repo pour la partie technique.</p>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Choisir un document">
+    <button class="tab active" data-doc="marche" role="tab" aria-selected="true">📊 Étude de marché <span class="n">6</span></button>
+    <button class="tab" data-doc="position" role="tab" aria-selected="false">🎯 Positionnement produit <span class="n">5</span></button>
+    <button class="tab" data-doc="tech" role="tab" aria-selected="false">🛠 Spécifications techniques <span class="n">5</span></button>
+  </nav>
+
+  <!-- ═══════════════ DOC 1 — MARCHÉ ═══════════════ -->
+  <section class="doc active" id="marche">
+    <div class="doc-intro">
+      <h2>Étude de marché Solana</h2>
+      <p>Le document original était honnête : il annonçait ne récupérer aucune donnée de marché réelle et étiquetait tout comme « estimation à valider ». J'ai fait la recherche qu'il annonçait ne pas pouvoir faire.</p>
+      <span class="flag">⚠ Les chiffres ci-dessous bougent vite — voir le doute en bas de section avant de les mettre dans un pitch figé.</span>
+    </div>
+
+    <h3 class="section-h">Comparatif des 5 actifs</h3>
+    <div class="card">
+      <div class="status ok">Répondu</div>
+      <p class="q">Capitalisation, performance, volatilité de SOL / USDC / USDT / BTC / ETH — « estimation à valider »</p>
+      <div class="grid2">
+        <div class="stat"><div class="v">~76–89 $</div><div class="l">SOL</div><div class="d">Cap ~44–52 Md$ · forte variation selon l'heure/source cette semaine</div></div>
+        <div class="stat"><div class="v">~76 712 $</div><div class="l">BTC</div><div class="d">Cap ~1,33 T$ · 21/08 8h ET, +24% depuis lundi</div></div>
+        <div class="stat"><div class="v">~2 259 $</div><div class="l">ETH</div><div class="d">Cap ~233–273 Md$ selon la source · 19-20/08</div></div>
+        <div class="stat"><div class="v">~73 Md$</div><div class="l">USDC</div><div class="d">Circulant · cible 150 Md$ visée S2 2026</div></div>
+        <div class="stat"><div class="v">~183 Md$</div><div class="l">USDT</div><div class="d">Cap · ~59% du marché stablecoin</div></div>
+      </div>
+      <p class="answer">SOL reste très volatil (deux sources à 3 jours d'écart donnent 75,90 $ et 89,11 $) ; BTC a rebondi fort cette semaine (+24%) après un creux à ~65 000 $ début août. USDC et USDT dominent ensemble ~84% du marché stablecoin.</p>
+      <div class="src">Sources : <a href="https://coinmarketcap.com/currencies/solana/" target="_blank" rel="noopener">CoinMarketCap SOL</a>, <a href="https://fortune.com/article/price-of-bitcoin-08-21-2026/" target="_blank" rel="noopener">Fortune BTC 21/08</a>, <a href="https://metamask.io/price/ethereum" target="_blank" rel="noopener">MetaMask ETH</a>, <a href="https://usdc.org/stats" target="_blank" rel="noopener">USDC.org stats</a>, <a href="https://coinlaw.io/tether-statistics/" target="_blank" rel="noopener">CoinLaw USDT</a></div>
+    </div>
+
+    <h3 class="section-h">Simulateur de frais</h3>
+    <div class="card">
+      <div class="status ok">Répondu</div>
+      <p class="q">Coût réel Solana vs Ethereum vs Bitcoin — « estimation paramétrique à valider »</p>
+      <div class="grid2">
+        <div class="stat"><div class="v">~0,0006–0,001 $</div><div class="l">Solana</div><div class="d">Médian par tx, 2026</div></div>
+        <div class="stat"><div class="v">0,50–5 $+</div><div class="l">Ethereum L1</div><div class="d">L2 (Arbitrum/Base) : 0,01–0,30 $</div></div>
+        <div class="stat"><div class="v">~0,82 $</div><div class="l">Bitcoin</div><div class="d">Moyenne · mais 0,36 $ à 62 $ selon congestion</div></div>
+      </div>
+      <p class="answer">Ça confirme la thèse produit du doc positionnement : à ~1000 transactions (approve/fund/distribute cumulés sur plusieurs pacts), Solana coûte de l'ordre du centime, Ethereum L1 coûterait plusieurs centaines de dollars. C'est un argument chiffrable pour le pitch.</p>
+      <div class="src">Sources : <a href="https://www.solanafees.org/" target="_blank" rel="noopener">SolanaFees.org</a>, <a href="https://stakepoint.app/blog/solana-gas-fees-explained-why-transactions-cost-almost-nothing" target="_blank" rel="noopener">StakePoint</a>, <a href="https://99bitcoins.com/cryptocurrency/bitcoin/fees/" target="_blank" rel="noopener">99Bitcoins</a></div>
+    </div>
+
+    <h3 class="section-h">Marché adressable</h3>
+    <div class="card">
+      <div class="status open">À valider</div>
+      <p class="q">TAM / SAM / SOM — « montant et population non documentés »</p>
+      <p class="answer">Reste sans réponse, et je ne peux pas l'inventer avec une recherche web : ça demande des données propres à BuildPact (nombre d'équipes ciblées, taux de conversion réel, panier moyen financé) qui n'existent pas encore avant un vrai lancement. Le cadre de calcul que le doc propose (TAM = équipes × financement moyen × fee) reste valable, juste vide de chiffres pour l'instant.</p>
+    </div>
+
+    <div class="meta-doubt">
+      <h3>⚠ Doute que j'ajoute, au-delà de ce que le doc signalait</h3>
+      <ul>
+        <li><b>Ces chiffres seront déjà un peu faux au moment où tu les lis.</b> Deux sources consultées à 2-3 jours d'écart donnent des écarts de 10-15% sur SOL et ETH. Si tu les mets dans un pitch deck ou un slide fixe, ajoute la date exacte de consultation, et si possible revérifie-les la veille du 26/08.</li>
+        <li>Le doc original présentait des barres de graphique ("capitalisation relative") avec des hauteurs visuellement précises alors qu'il annonçait lui-même n'avoir aucune donnée — même avec le badge "à valider", une barre à 96% de hauteur donne une impression de précision qui n'existe pas. Je n'ai pas reproduit ce type de visuel ici pour cette raison.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════════ DOC 2 — POSITIONNEMENT ═══════════════ -->
+  <section class="doc" id="position">
+    <div class="doc-intro">
+      <h2>Positionnement produit</h2>
+      <p>Ce document est solide sur ce qu'il documente (parcours en 6 actes, business model 2%/98%) et honnête sur ce qu'il ne documente pas (personas, concurrence, adoption, tokenomics). J'ai pu combler la partie concurrentielle par recherche web ; le reste demande de vrais utilisateurs, que le produit n'a pas encore.</p>
+    </div>
+
+    <h3 class="section-h">Concurrence</h3>
+    <div class="card">
+      <div class="status ok">Répondu</div>
+      <p class="q">Comparaison chiffrée avec concurrents — « non documentée · à valider »</p>
+      <p class="answer">Aucun concurrent direct trouvé qui combine exactement ce que fait BuildPact : découverte de projet + accord multi-partie on-chain + escrow + distribution automatique, natif Solana. Les trois protocoles les plus proches par fonction visent tous autre chose :</p>
+      <ul style="margin:10px 0; padding-left:20px; color:var(--muted); font-size:14px">
+        <li><b style="color:#fff">Sablier</b> — streaming de tokens seconde par seconde, supporte Solana + 24 chaînes. Pas de notion de rôles/parts négociées ni d'approbation multi-partie.</li>
+        <li><b style="color:#fff">0xSplits</b> — répartition de revenus on-chain, zéro frais, mais 100% EVM (13+ chaînes) ; le support Solana se limite à du bridging d'actifs, pas un déploiement natif.</li>
+        <li><b style="color:#fff">Juicebox</b> — trésorerie programmable et levée de fonds, Ethereum/Arbitrum/Base/Optimism uniquement.</li>
+      </ul>
+      <p class="answer">La différenciation du doc ("ni workspace ni marketplace, relie découverte + accord + paiement") tient : personne d'identifié ne fait cette combinaison précise sur Solana.</p>
+      <div class="src">Sources : <a href="https://github.com/0xSplits/docs" target="_blank" rel="noopener">0xSplits docs</a>, <a href="https://gitcoin.co/apps/sablier" target="_blank" rel="noopener">Sablier via Gitcoin</a>, <a href="https://juicebox.money/" target="_blank" rel="noopener">Juicebox</a></div>
+    </div>
+
+    <h3 class="section-h">Personas, adoption, tokenomics, chiffrage</h3>
+    <div class="card">
+      <div class="status open">À valider</div>
+      <p class="q">Personas validés par entretiens — « manque »</p>
+      <p class="answer">Reste ouvert. Ça demande de vrais entretiens avec des solo founders / builders recrutés, qui n'ont pas encore eu lieu (produit en hackathon, pas encore d'utilisateurs réels). Les 4 personas du doc sont une hypothèse de travail raisonnable, pas une donnée validée.</p>
+    </div>
+    <div class="card">
+      <div class="status open">À valider</div>
+      <p class="q">Métriques d'adoption, volumes, taux de conversion — « non documentés »</p>
+      <p class="answer">Idem : n'existe pas avant un vrai lancement avec de vrais utilisateurs. Aucune recherche web ne peut produire des métriques d'usage d'un produit qui n'a pas encore d'usage.</p>
+    </div>
+    <div class="card">
+      <div class="status partial">Avis, pas une réponse</div>
+      <p class="q">Token BuildPact, allocation, staking, valorisation — « hypothèse à valider »</p>
+      <p class="answer">Mon avis, pas un fait : ne pas se précipiter là-dessus. Le fee protocole à 2% est déjà un business model qui marche sans token. Ajouter un token maintenant ajoute de la complexité et un risque réglementaire (les stablecoins et le financement sont déjà signalés comme des zones à risque dans le doc marché) pour un bénéfice qui n'est justifié par aucune traction actuelle.</p>
+    </div>
+
+    <div class="meta-doubt">
+      <h3>⚠ Doute que j'ajoute</h3>
+      <ul>
+        <li>Le doc classe "Équipe hackathon / DAO" comme segment avec un badge "hypothèse à valider" — c'est cohérent avec ta propre roadmap (financement post-hackathon, pas encore de retours utilisateurs sur ce segment précis). Rien à corriger, juste à garder en tête que c'est le segment le moins étayé des quatre.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════════ DOC 3 — TECHNIQUE ═══════════════ -->
+  <section class="doc" id="tech">
+    <div class="doc-intro">
+      <h2>Spécifications techniques</h2>
+      <p>Celui-ci, j'ai pu le croiser directement avec ton vrai code (le repo que j'ai édité aujourd'hui). Bonne nouvelle : la structure PDA et les instructions sont fidèles au code réel. Une incohérence trouvée, à corriger.</p>
+    </div>
+
+    <h3 class="section-h">CI/CD</h3>
+    <div class="card">
+      <div class="status ok">Répondu (vérifié)</div>
+      <p class="q">Pipeline CI/CD exact — « détail à valider, configuration non fournie dans les sources »</p>
+      <p class="answer">Vérifié directement dans le repo : il n'y a <b>aucun fichier de workflow CI/CD</b> (pas de dossier <code>.github/workflows</code>, aucun <code>.yml</code>/<code>.yaml</code> nulle part dans le projet). Ce n'est pas juste "non documenté", c'est "inexistant" pour l'instant. Vu le délai (5 jours), je ne le mettrais pas en place maintenant — le workflow manuel (copier-coller GitHub + build Vercel) suffit pour la deadline. À faire post-hackathon si le projet continue.</p>
+    </div>
+
+    <h3 class="section-h">Audit & tests</h3>
+    <div class="card">
+      <div class="status open">Confirmé non fait</div>
+      <p class="q">Audit avant mainnet — « non réalisé/documenté »</p>
+      <p class="answer">Confirmé : aucun audit n'a eu lieu, et ce n'est pas prévu avant le 26/08 — cohérent avec la règle absolue du projet "devnet uniquement jusqu'à J-0, mainnet post-hackathon". Rien d'anormal, juste à ne pas présenter le programme comme audité devant les juges.</p>
+    </div>
+    <div class="card">
+      <div class="status open">À valider par toi</div>
+      <p class="q">Checklist tests (Anchor test, invariants, E2E, matrice wallets) — cases non cochées dans le doc</p>
+      <p class="answer">Je n'ai pas pu lancer <code>anchor test</code> moi-même aujourd'hui (l'environnement où j'ai travaillé a un souci d'installation qui bloque les commandes npm/anchor). Le test end-to-end (create → distribute) est noté comme confirmé dans ton Cerveau Projet du 21/08 — je m'appuie sur cette note, je ne l'ai pas revérifié en direct.</p>
+    </div>
+
+    <h3 class="section-h">Incohérence trouvée</h3>
+    <div class="card">
+      <div class="status open">Erreur à corriger</div>
+      <p class="q">« project_id ≤ 32 caractères » — répété dans ce doc et dans le Cerveau Projet</p>
+      <p class="answer">Ton vrai <code>lib.rs</code> a <b>MAX_PROJECT_ID_LEN = 20</b>, pas 32. Les deux chiffres ne se contredisent pas techniquement (32 octets = la limite Solana sur un seed de PDA ; 20 caractères = ta propre limite applicative, plus stricte, imposée par toi dans le code). Mais si quelqu'un — toi, un coéquipier, un juge qui teste — lit "32" dans la doc et crée un projet avec un <code>project_id</code> de 25 caractères, le programme va le rejeter, sans que cette limite de 20 soit écrite nulle part dans les docs produit. Je recommande de corriger le chiffre dans le Cerveau Projet et ce doc, et de tester une fois avec un id à la limite (19, 20, 21 caractères) pour confirmer le comportement exact avant la démo.</p>
+    </div>
+
+    <div class="meta-doubt">
+      <h3>⚠ Doute général sur les 3 documents</h3>
+      <ul>
+        <li>Les trois fichiers originaux contenaient chacun ~65 blocs de texte quasi identiques ("Point de contrôle 1-16", "Trace 01-51", notice de prudence répétée 4 fois) qui ne portent aucune information — juste du remplissage pour donner l'impression d'un document plus complet qu'il ne l'est. Je ne l'ai pas reproduit ici. Si ces fichiers doivent être partagés ou imprimés tels quels pour les juges, vaut mieux les nettoyer de ce bourrage avant.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="foot">
+    BuildPact · synthèse des 3 documents du dossier Mamouth IA + recherche web + relecture du code réel · 21 août 2026.
+  </footer>
+</div>
+
+<script>
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+    document.querySelectorAll('.doc').forEach(d => d.classList.remove('active'));
+    tab.classList.add('active');
+    tab.setAttribute('aria-selected','true');
+    document.getElementById(tab.dataset.doc).classList.add('active');
+  });
+});
+</script>

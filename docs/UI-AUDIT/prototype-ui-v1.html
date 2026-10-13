@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BuildPact — Prototype UI v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #0a0a14;
+  --panel:  #111120;
+  --panel2: #151529;
+  --line:   rgba(255,255,255,.1);
+  --muted:  #9292aa;
+  --ink400: #b0b0c7;
+  --white:  #f7f7fb;
+  --violet: #9945ff;
+  --green:  #14f195;
+  --amber:  #ffcf5a;
+  --red:    #ff718b;
+  --ink900: #0a0a14;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family:'Inter',system-ui,sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height:100dvh;
+}
+/* Grille de fond token verrouillé */
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image:linear-gradient(rgba(153,69,255,.045) 1px, transparent 1px),
+                   linear-gradient(90deg, rgba(153,69,255,.045) 1px, transparent 1px);
+  background-size:42px 42px;
+  mask-image:linear-gradient(#000 60%, transparent 100%);
+  -webkit-mask-image:linear-gradient(#000 60%, transparent 100%);
+}
+a { color:inherit; text-decoration:none; }
+button { font-family:inherit; cursor:pointer; }
+button:focus-visible, a:focus-visible {
+  outline:2px solid var(--violet); outline-offset:2px; border-radius:6px;
+}
+
+/* ───── NAV ───── */
+.nav {
+  position:sticky; top:0; z-index:50;
+  display:flex; align-items:center; gap:28px;
+  padding:14px 32px;
+  background:rgba(10,10,20,.82); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+}
+.logo { display:flex; align-items:center; gap:10px; font-weight:800; font-size:17px; letter-spacing:-.3px; }
+.logo-mark {
+  width:30px; height:30px; border-radius:8px;
+  background:linear-gradient(135deg,var(--violet),#6633cc);
+  display:grid; place-items:center; font-weight:800; color:#fff; font-size:15px;
+}
+.logo em { color:var(--violet); font-style:normal; }
+.nav-links { display:flex; gap:4px; flex:1; }
+.nav-links a {
+  padding:8px 12px; border-radius:8px; font-size:13.5px; font-weight:500; color:var(--ink400);
+  transition:color .15s, background .15s;
+}
+.nav-links a:hover { color:var(--white); }
+.nav-links a.active { color:var(--white); background:var(--panel2); }
+.nav-right { display:flex; align-items:center; gap:10px; margin-left:auto; }
+.theme-dot-row { display:flex; gap:5px; }
+.theme-dot { width:16px; height:16px; border-radius:5px; border:1px solid var(--line); }
+.btn-lang {
+  display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; font-size:11px; font-weight:700;
+}
+.btn-lang span { padding:6px 9px; color:var(--muted); }
+.btn-lang .on { background:var(--panel2); color:var(--white); }
+.btn-wallet {
+  display:flex; align-items:center; gap:8px;
+  background:var(--violet); color:var(--ink900);
+  border:none; border-radius:10px; padding:9px 16px; font-size:13.5px; font-weight:700;
+  transition:opacity .15s;
+}
+.btn-wallet:hover { opacity:.9; }
+.wallet-dot { width:8px; height:8px; border-radius:50%; background:var(--green); }
+
+/* ───── HERO ───── */
+.hero { max-width:1180px; margin:0 auto; padding:84px 32px 60px; }
+.eyebrow {
+  font-size:12px; font-weight:700; letter-spacing:.14em; color:var(--green); text-transform:uppercase;
+  margin-bottom:18px;
+}
+.hero h1 { font-size:52px; line-height:1.08; font-weight:800; letter-spacing:-.03em; max-width:640px; }
+.hero h1 span { color:var(--violet); }
+.hero p { color:var(--ink400); font-size:17px; line-height:1.65; max-width:560px; margin-top:20px; }
+.hero-cta { display:flex; gap:12px; margin-top:34px; flex-wrap:wrap; }
+.btn-primary {
+  background:var(--violet); color:var(--ink900); border:none; border-radius:12px;
+  padding:14px 24px; font-size:14.5px; font-weight:700; transition:opacity .15s, transform .15s;
+}
+.btn-primary:hover { opacity:.9; transform:translateY(-1px); }
+.btn-secondary {
+  background:var(--panel); color:var(--white); border:1px solid var(--line); border-radius:12px;
+  padding:14px 24px; font-size:14.5px; font-weight:600; transition:border-color .15s;
+}
+.btn-secondary:hover { border-color:rgba(153,69,255,.4); }
+.hero-badges { display:flex; gap:20px; margin-top:26px; color:var(--muted); font-size:12.5px; }
+.hero-badges span b { color:var(--ink400); font-weight:600; }
+
+/* ───── SECTIONS ───── */
+.section { max-width:1180px; margin:0 auto; padding:56px 32px; }
+.section h2 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin-bottom:24px; }
+.grid5 { display:grid; grid-template-columns:repeat(5,1fr); gap:14px; }
+.step-card {
+  background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px 18px;
+  transition:border-color .2s, transform .2s;
+}
+.step-card:hover { border-color:rgba(153,69,255,.35); transform:translateY(-2px); }
+.step-num { color:var(--violet); font-weight:800; font-size:13px; }
+.step-card h3 { font-size:15px; font-weight:700; margin:10px 0 8px; }
+.step-card p { color:var(--muted); font-size:12.5px; line-height:1.6; }
+.grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+
+/* ───── STATS ───── */
+.stat-row { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:8px; }
+.stat {
+  background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:22px;
+}
+.stat .label { color:var(--muted); font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+.stat .val { font-size:30px; font-weight:800; margin-top:10px; letter-spacing:-.02em; }
+.stat .val small { font-size:14px; color:var(--violet); font-weight:700; margin-left:4px; }
+.stat .hint { color:var(--ink400); font-size:12px; margin-top:8px; }
+
+/* ───── FOOTER ───── */
+.footer {
+  border-top:1px solid var(--line); margin-top:40px;
+  padding:26px 32px; display:flex; justify-content:space-between; align-items:center;
+  color:var(--muted); font-size:12.5px;
+}
+.footer .mono { font-family:ui-monospace,monospace; font-size:11.5px; }
+
+@media (max-width: 900px) {
+  .nav-links { display:none; }
+  .grid5 { grid-template-columns:repeat(2,1fr); }
+  .grid3 { grid-template-columns:1fr; }
+  .hero h1 { font-size:36px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="logo" href="#"><span class="logo-mark">P</span> Build<em>Pact</em></a>
+  <div class="nav-links">
+    <a href="#" class="active">Dashboard</a>
+    <a href="#">Marketplace</a>
+    <a href="#">Pacts</a>
+    <a href="#">Builders</a>
+    <a href="#">Réseau</a>
+    <a href="#">Profil</a>
+    <a href="#">Treasury</a>
+    <a href="#">Docs</a>
+    <a href="#">À propos</a>
+  </div>
+  <div class="nav-right">
+    <div class="theme-dot-row" aria-label="Choix du thème" role="group">
+      <span class="theme-dot" style="background:#8b5cf6" title="Default"></span>
+      <span class="theme-dot" style="background:#10b981" title="Emerald"></span>
+      <span class="theme-dot" style="background:#f59e0b" title="Amber"></span>
+      <span class="theme-dot" style="background:#06b6d4" title="Cyan"></span>
+      <span class="theme-dot" style="background:#ef5da8" title="Pink"></span>
+    </div>
+    <div class="btn-lang" role="group" aria-label="Langue">
+      <span class="on">FR</span><span>EN</span>
+    </div>
+    <button class="btn-wallet"><span class="wallet-dot"></span> Connexion…</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <p class="eyebrow">Revenue share protocol · Solana devnet</p>
+  <h1>Le pacte on-chain des <span>builders Solana</span>.</h1>
+  <p>Crée un projet, définis les rôles et les parts, reçois des candidatures, verrouille l'accord on-chain — puis reçois des fonds distribués automatiquement, sans virement manuel.</p>
+  <div class="hero-cta">
+    <button class="btn-primary">Créer un pact →</button>
+    <button class="btn-secondary">Explorer le Marketplace</button>
+    <button class="btn-secondary">Voir la documentation</button>
+  </div>
+  <div class="hero-badges">
+    <span><b>🔒</b> PDA seeds canoniques</span>
+    <span><b>⚡</b> Distribution automatique</span>
+    <span><b>✓</b> 100% vérifiable on-chain</span>
+  </div>
+</header>
+
+<section class="section" aria-labelledby="h-stats">
+  <h2 id="h-stats">Le protocole en direct</h2>
+  <div class="stat-row">
+    <div class="stat">
+      <p class="label">Total value locked</p>
+      <p class="val"><span class="raw">0.003</span> SOL</p>
+      <p class="hint">Solde live des vaults — lu on-chain</p>
+    </div>
+    <div class="stat">
+      <p class="label">Distribué</p>
+      <p class="val"><span class="raw">13.690</span> SOL</p>
+      <p class="hint">Dernières distributions aux membres</p>
+    </div>
+    <div class="stat">
+      <p class="label">Pactes actifs</p>
+      <p class="val"><span class="raw">3</span></p>
+      <p class="hint">Comptes Project on-chain, devnet</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-how">
+  <h2 id="h-how">Comment ça marche</h2>
+  <div class="grid5">
+    <div class="step-card">
+      <div class="step-num">01</div>
+      <h3>Créer</h3>
+      <p>Décris ton projet, tes rôles et ta part. Choisis ce que tu cherches : devs, investisseurs, ou les deux.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">02</div>
+      <h3>Rejoindre</h3>
+      <p>Les membres postulent avec leur wallet, leur rôle et leur part négociée. Chacun approuve on-chain.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">03</div>
+      <h3>Finaliser</h3>
+      <p>Une fois toutes les approbations réunies et les parts à 100%, le founder verrouille le pact on-chain.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">04</div>
+      <h3>Financer</h3>
+      <p>Les backers envoient des fonds dans le vault du projet — escrow PDA, entièrement vérifiable.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">05</div>
+      <h3>Distribuer</h3>
+      <p>2% protocole, 98% réparti automatiquement entre les membres selon leurs parts. Aucun virement manuel.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-why">
+  <h2 id="h-why">Pourquoi BuildPact</h2>
+  <div class="grid3">
+    <div class="step-card">
+      <h3>Solo founder</h3>
+      <p>Un fondateur peut cadrer l'idée, publier les besoins, intégrer les membres et verrouiller l'accord sans coordination manuelle des paiements.</p>
+    </div>
+    <div class="step-card">
+      <h3>La confiance, c'est du code</h3>
+      <p>Rôles, parts, approbation, escrow et distribution deviennent vérifiables on-chain — plus besoin de contrats informels.</p>
+    </div>
+    <div class="step-card">
+      <h3>Où travaillent les devs ?</h3>
+      <p>Sur GitHub et Discord. BuildPact ne les remplace pas : il apporte la couche confiance + paiement qui leur manque.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <span>© 2026 BuildPact Protocol · Devnet</span>
+  <span class="mono">Construit sur Solana · Non audité — Devnet uniquement</span>
+</footer>
+
+</body>
+</html>

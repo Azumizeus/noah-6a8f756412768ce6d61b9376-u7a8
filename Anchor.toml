@@ -1,0 +1,46 @@
+# Toolchain épinglée : sans cela, le build utilise la CLI installée sur la
+# machine, quelle qu'elle soit. Pour un programme dont le binaire déployé doit
+# rester reproductible, une montée de version silencieuse de la CLI produirait
+# un .so différent à code source identique.
+#
+# Prérequis : avm doit connaître cette version (`avm install 0.31.1`). Si avm
+# n'est pas utilisé sur la machine, `anchor build` peut refuser de démarrer —
+# dans ce cas commenter la ligne plutôt que de la modifier au hasard.
+[toolchain]
+anchor_version = "0.31.1"
+
+[features]
+resolution = true
+skip-lint = false
+
+# Le cluster de travail est devnet (voir [provider]). Sans section
+# [programs.devnet], `anchor deploy` / `anchor test --provider.cluster devnet`
+# ne résolvent pas l'ID du programme.
+#
+# localnet est conservé pour les tests locaux avec validateur éphémère.
+# Le program ID est IDENTIQUE partout : c'est un upgrade en place du programme
+# existant, jamais un nouveau déploiement.
+[programs.localnet]
+workspace = "9quyDwntXDBhNhTmrfCf7xEXVFaxYMB83BwPEUeqVoUJ"
+
+[programs.devnet]
+workspace = "9quyDwntXDBhNhTmrfCf7xEXVFaxYMB83BwPEUeqVoUJ"
+
+[registry]
+url = "https://api.apr.dev"
+
+# wallet pointe sur l'upgrade authority 8eui3v5xoSwoGHeLXrYQv7TMfvY2hSrJeBoHCFQzB4j6
+# (restaurée depuis wallet.json le 27/08). Vérifier avant tout déploiement :
+#   solana address -k ~/.config/solana/id.json   → doit renvoyer 8eui3v5...
+# Si ce fichier est écrasé par une autre clé, l'upgrade échoue en
+# « authority mismatch » — et le programme devient définitivement figé si la
+# clé d'origine est perdue.
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+# -p pointe sur tsconfig.anchor.json, PAS sur tsconfig.json : ce dernier est
+# celui du frontend ("files": []) et ferait passer la suite en « 0 passing »
+# sans lever la moindre erreur.
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.anchor.json -t 1000000 tests/**/*.ts"

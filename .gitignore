@@ -1,0 +1,119 @@
+# Dependencies
+node_modules
+
+# Lockfiles
+bun.lock
+
+# ─────────────────────────────────────────────────────────────────────────
+# contracts/ — squelette « hello world » livré par l'environnement de dev.
+# Ce n'est PAS BuildPact : son declare_id! est HV7Uxd..., son cluster est
+# localnet, sa description « Created with Anchor ». Le vrai programme est
+# à la racine (programs/, Anchor.toml, tests/), program ID 9quyDwnt...
+#
+# Ignoré en entier pour que le repo GitHub ne contienne qu'un seul
+# programme. Le dossier reste sur disque tant que l'upgrade n'est pas
+# validé : l'outillage de la plateforme peut encore s'y référer, et le
+# supprimer maintenant risquerait de bloquer le déploiement.
+# ─────────────────────────────────────────────────────────────────────────
+contracts/
+
+# Artefacts Rust / Anchor du VRAI programme (racine)
+target/debug
+target/release
+target/sbpf-solana-solana
+target/.rustc_info.json
+.anchor
+# IDL/types générés : target/idl/workspace.json est la doc du contrat (requis
+# par les tests) → gardé tracké. On n'ignore que les artefacts Rust lourds.
+programs/workspace/target/
+programs/**/target/
+
+# ─────────────────────────────────────────────────────────────────────────
+# JAMAIS committer : target/deploy/ contient workspace-keypair.json, la clé
+# qui détient l'upgrade authority du programme 9quyDwnt... Un push la rend
+# publique et n'importe qui peut réécrire le programme déployé.
+# ─────────────────────────────────────────────────────────────────────────
+target/deploy/
+**/*-keypair.json
+wallet.json
+
+# Secrets d'environnement (clés RPC Helius, clés Supabase)
+.env
+.env.local
+.env.*.local
+
+# Vite
+.vite
+
+# Build output
+dist
+
+# Cache
+cache
+
+# OS files
+.DS_Store
+
+
+.vercel
+
+# État LOCAL du CLI Supabase (project-ref de la liaison, version de l'outil).
+# Produit par `supabase link` / `secrets set`, recréé à volonté : c'est du
+# travail local, pas du projet — il ne doit jamais partir sur GitHub.
+supabase/.temp/
+
+.env*
+# Le MODÈLE de variables d'environnement n'est PAS un secret : il documente les
+# variables attendues (dont BUILDPACT_KEYPAIR_DIR qui remplace l'ancien
+# wallet.json autrefois committé). La négation DOIT suivre `.env*` pour gagner.
+!.env.example
+
+# ─────────────────────────────────────────────────────────────────────────
+# 19/09 — Agents et skills Claude (installés localement pour Cowork/Claude
+# Desktop, ~700 fichiers, plusieurs dizaines de Mo). Outillage LOCAL pour
+# travailler sur le projet, pas du code applicatif : ne doit jamais partir
+# sur GitHub. Le commettre exploserait aussi la règle "jamais plus de 5
+# fichiers par passe" (voir CERVEAU_PROMPT.md, règle 6) au premier sync.
+# ─────────────────────────────────────────────────────────────────────────
+.claude/
+
+# 09/10 — Exports de tâche « Cowork » livrés par la plateforme : une archive
+# de ~60 Mo posée à la racine, avec les transcriptions de session (.jsonl) et
+# les captures. Outillage local, jamais du code applicatif. Un tel export peut
+# recopier un secret en clair dans ses journaux : celui du 07/10 contenait la
+# clé VAPID trois fois. Ne jamais committer, ne jamais repousser par le Sync.
+Cowork task*
+
+# MCP local (chrome-devtools), jamais synchronise
+.mcp.json
+
+# ─────────────────────────────────────────────────────────────────────────
+# 20/09 — Docs de cerveau interne (mémoire de travail IA / états de sync).
+# Valeur opérationnelle LOCALE seulement : jamais sur le repo public-privé
+# (le registre des juges ne doit pas voir l'intendance interne).
+# Fichiers conservés sur disque, juste désynchronisés de git.
+# ─────────────────────────────────────────────────────────────────────────
+CERVEAU_PROMPT.md
+MIRROR_SYNC_STATE.md
+RESTORE_STATE.md
+BUILDPACT_MIGRATION_PLAN.md
+FEUILLE_DE_ROUTE.md
+
+# ─────────────────────────────────────────────────────────────────────────
+# 08/10 — Rapport d'audit sécurité : il cite la clé privée compromise, il ne
+# doit jamais partir sur le remote. La règle vivait dans le dépôt de
+documentation (`/RAPPORT-*.md`) ; le document a été rapatrié dans `docs/`,
+# donc la règle vient avec lui. Ne pas la retirer.
+# ─────────────────────────────────────────────────────────────────────────
+docs/RAPPORT-*.md
+
+# ─────────────────────────────────────────────────────────────────────────
+# 12/10/2026 — Sorties d'outil et notes de travail, hors du dépôt livré.
+# `graphify-out/` est un artefact de graphe (4,3 Mo, régénérable) et
+# `StudyVault/` un carnet d'apprentissage personnel : ni l'un ni l'autre n'a
+# sa place dans le dépôt que le jury ouvre. Les fichiers restent sur le
+# disque — git cesse simplement de les suivre. Ne pas retirer : sans ces
+# lignes, un `git add -A` les rapatrie au prochain commit.
+# ─────────────────────────────────────────────────────────────────────────
+graphify-out/
+StudyVault/

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="BuildPact — Revue des documents de référence (08/10/2026)">
+<title>BuildPact — Revue des documents de référence (08/10/2026)</title>
+<style>
+:root{--bg:#f7f6f3;--panel:#fff;--ink:#131318;--ink2:#55555f;--ink3:#6f6f7a;--line:#e4e2dc;--accent:#4c21c4;--ok:#0e8a5f;--warn:#b7791f;--err:#c13b58}
+@media (prefers-color-scheme: dark){:root{--bg:#0d0f14;--panel:#151821;--ink:#eceef4;--ink2:#a7adbd;--ink3:#7b8296;--line:#262b36;--accent:#a78bfa;--ok:#34d399;--warn:#f0b95c;--err:#ff7a92}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:-.01em}
+main{max-width:900px;margin:0 auto;padding:36px 22px 90px}
+h1{font-size:clamp(26px,4.6vw,38px);line-height:1.15;letter-spacing:-.03em;margin:0 0 6px}
+h2{font-size:22px;letter-spacing:-.02em;margin:38px 0 10px;padding-top:14px;border-top:1px solid var(--line)}
+h3{font-size:17px;margin:24px 0 8px}
+p{margin:10px 0}
+a{color:var(--accent)}
+code{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-word}
+pre{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;overflow:auto}
+pre code{background:none;border:0;padding:0;font-size:12.5px}
+blockquote{margin:16px 0;padding:12px 16px;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px}
+blockquote p{margin:4px 0;color:var(--ink2)}
+ul{margin:10px 0;padding-left:20px}
+ol{margin:10px 0;padding-left:22px}
+li{margin:4px 0}
+hr{border:0;border-top:1px solid var(--line);margin:26px 0}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);font-weight:600}
+tr:last-child td{border-bottom:0}
+footer{max-width:900px;margin:0 auto;padding:0 22px 40px;color:var(--ink3);font-size:12px}
+</style>
+</head>
+<body>
+<main>
+<h1>🧐 REVUE DES DOCUMENTS DE RÉFÉRENCE (FR + EN)</h1>
+<blockquote><p>08/10/2026 · relu en entier : <code>ETAT-APP-2026-10-08-FR.md</code>, <code>ETAT-APP-2026-10-08-EN.md</code>, <code>PLAN-CHANTIERS-PREMIUM-2026-10-08.md</code>. <strong>Une seule correction a été appliquée d'office</strong> (une erreur factuelle, § 1). Tout le reste est proposé : rien n'est modifié tant qu'on ne l'a pas validé.</p></blockquote>
+<hr>
+<h2>1. Erreur factuelle — corrigée</h2>
+<table><thead><tr><th>#</th><th>Où</th><th>Ce qui était écrit</th><th>Réel mesuré le 08/10</th></tr></thead><tbody><tr><td>E1</td><td><code>ETAT</code> FR § 5 et EN § 5</td><td><code>npm test</code> <strong>63/63</strong></td><td><strong>66/66</strong> (les 3 tests du correctif des fonds HD)</td></tr></tbody></table>
+<p>C'est le seul point où le document était <strong>faux</strong> au sens strict. Corrigé dans les deux langues, et les <code>.html</code> ont été régénérés.</p>
+<hr>
+<h2>2. Incomplet — un manque fonctionnel non documenté</h2>
+<h3>I1 · Le profil modifié en premium ne part jamais au serveur</h3>
+<p>Le document présente le profil comme livré (« Profil builder sécurisé : <code>signMessage</code>, avatar, niveau de compétence, mode aperçu/édition et export PDF » dans les acquis, et <code>PremiumProfil</code> rangé du côté premium). Ce qui se passe réellement :</p>
+<ul><li><code>PremiumProfil</code> demande une signature puis écrit <strong>uniquement</strong> dans <code>localStorage</code> (<code>premiumProfilV2</code>) ;</li><li><code>PremiumBuilders</code> lit l'annuaire via <code>listAllProfiles()</code> (Supabase) ;</li><li>donc : un pseudo ou un avatar changé dans le shell premium <strong>n'apparaît pas dans l'annuaire</strong>, ni sur un autre appareil ;</li><li>seul le chemin legacy (<code>MonProfilPage</code>) écrit vraiment, via <code>submitProfileUpdate</code> → Edge Function <code>update-profile</code>.</li></ul>
+<p>Le commentaire du composant (« le profil on-chain reprend la main à la prochaine synchro ») décrit une synchro qui <strong>n'existe pas dans le code</strong>. C'est précisément le genre de phrase qui rend un document rassurant et faux.</p>
+<p><strong>Proposition</strong> : ajouter une ligne en § 6 « Limites connues » — c'est une limite réelle et vérifiée, pas une nuance. Et en faire un critère de sortie du chantier 3 (voir <code>INVENTAIRE-V1-2026-10-08.md</code> § 5).</p>
+<h3>I2 · La liste de suppression de <code>/v1</code> est incomplète</h3>
+<p><code>ETAT</code> § 4 annonce 10 pages et une liste de composants ; l'inventaire mesuré (fermeture transitive des imports) en trouve <strong>52 fichiers</strong>, dont <code>PactPublicPage</code> — absent de la liste — et 29 composants supplémentaires (<code>XpBar</code>, <code>BadgeShelf</code>, <code>QuestBoard</code>, <code>WalletPanel</code>, <code>ChatSessionsPanel</code>, <code>ContactModal</code>, <code>StarRating</code>, <code>BuilderDetailModal</code>, <code>FreeGrid</code>, …).</p>
+<p>Plus gênant que le décompte : <strong>cinq familles fonctionnelles n'ont aucun équivalent premium</strong> et le document ne le dit pas. Un lecteur extérieur comprend aujourd'hui que retirer <code>/v1</code> est un nettoyage d'habillage. C'en est aussi un, mais pas seulement.</p>
+<p><strong>Proposition</strong> : remplacer la liste de § 4 par un renvoi à <code>INVENTAIRE-V1-2026-10-08.md</code>, et y ajouter la phrase « ce qui n'existe qu'en <code>/v1</code> comprend cinq familles fonctionnelles sans équivalent premium ».</p>
+<h3>I3 · Le plan des chantiers affiche un état d'avant le dernier commit</h3>
+<p><code>PLAN-CHANTIERS</code> § 0 : « <code>main</code> après les chantiers livrés = <strong><code>42e4867</code></strong> (11 commits au-dessus de <code>869f0b7</code>) », « 28 fichiers changés ». Le dépôt est à <strong><code>5a6d9f6</code></strong> (12 commits, 31 fichiers). Le plan est donc périmé d'un commit — pas faux au moment où il a été écrit, mais c'est le premier chiffre qu'un lecteur vérifie.</p>
+<p><strong>Proposition</strong> : soit mettre les deux lignes à jour, soit — mieux — écrire « <code>main</code> au 08/10 : voir <code>ETAT</code>, § 1 » et ne plus dupliquer le hash dans deux documents. Un hash recopié à deux endroits divergera toujours.</p>
+<hr>
+<h2>3. Trop technique pour un lecteur extérieur</h2>
+<p>Le document est excellent pour Noah. Pour un lecteur qui arrive de l'extérieur (investisseur, jury, nouveau dev), trois passages demandent une clé de lecture qu'il n'a pas :</p>
+<table><thead><tr><th>#</th><th>Passage</th><th>Pourquoi c'est un mur</th><th>Proposition</th></tr></thead><tbody><tr><td>T1</td><td>§ 3 « Chantier 2 — comment » (<code>.p-legacy-skin</code>, manière dont Tailwind compile <code>bg-canvas-800</code>)</td><td>suppose qu'on sait ce qu'est Tailwind et une variable CSS</td><td>garder ici la phrase « la création de pact a été <strong>habillée</strong>, pas réécrite », et déplacer le mécanisme en annexe ou dans le <code>PLAN</code></td></tr><tr><td>T2</td><td>§ 3 « Chantier 4 — le vrai défaut trouvé » (hauteur résolue contre la piste de grille)</td><td>c'est un post-mortem de bug, pas un état de l'app</td><td>une ligne : « une bannière carrée débordait de sa vignette et masquait le texte — corrigé, sans couleur en dur » ; le récit complet dans le <code>PLAN</code></td></tr><tr><td>T3</td><td>Numérotation « chantiers 0, 1, 1b, 2, 3, 4 » et hashes de commit partout</td><td>« chantier 1b » n'existe que dans nos notes ; un hash ne veut rien dire hors du dépôt</td><td>garder la numérotation <strong>dans</strong> le plan, la retirer du document de référence ; dans la référence, nommer les choses par leur effet (« les Paramètres », « la création de pact »)</td></tr></tbody></table>
+<p>Ce n'est pas un reproche de fond : c'est le signe que le document sert deux publics à la fois. La solution n'est pas de le simplifier, c'est de trancher : <strong><code>ETAT</code> = état lisible par un extérieur ; <code>PLAN</code> = journal technique.</strong> Les deux existent déjà, il suffit de tenir la frontière.</p>
+<hr>
+<h2>4. Ce qui est très bien et ne doit pas bouger</h2>
+<p>À signaler, parce que c'est plus rare que le reste :</p>
+<ul><li>§ 1 et § 2 donnent des <strong>valeurs vérifiées</strong> (programme, frais, réseau, adaptateurs), pas des intentions ;</li><li>§ 6 « Limites connues, non maquillées » : trois limites nommées, dont deux impossibilités techniques assumées (push depuis un navigateur d'automatisation, signatures non testées par un agent). C'est ce qui rend le reste crédible ;</li><li>§ 7 sépare explicitement <strong>référence</strong> et <strong>archives</strong>, avec la raison de garder les archives. Un lecteur ne se demande plus quel document croire ;</li><li>la section sur les <strong>deux habillages</strong> et la règle « ne jamais faire lire <code>data-mode</code> au premium » : c'est la note la plus utile du document, celle qui évite le bug au prochain qui touche au thème.</li></ul>
+<hr>
+<h2>5. Erreurs de forme relevées</h2>
+<table><thead><tr><th>#</th><th>Où</th><th>Détail</th></tr></thead><tbody><tr><td>F1</td><td><code>PLAN</code> § 5 puis § 6</td><td>le titre « Chantier 3 » est en <code>###</code> sous une section <code>## 4</code> — la hiérarchie des titres décroche à cet endroit</td></tr><tr><td>F2</td><td><code>PLAN</code> § 4 fin</td><td>la ligne <code>---## 4. Chantier 4 …</code> colle un séparateur et un titre sans saut de ligne (visible dans le Markdown brut)</td></tr><tr><td>F3</td><td><code>ETAT</code> § 7</td><td><code>PLAN-CHANTIERS-PREMIUM-2026-10-08.md</code> est décrit « hors git » : c'est vrai *chez nous*, mais le plan ci-dessous (§ 6) propose de le versionner — les deux phrases devront dire la même chose</td></tr></tbody></table>
+<hr>
+<h2>6. Ce que je propose de faire, et qui attend ton accord</h2>
+<ol><li><strong>Déjà fait</strong> : corriger 63/63 → 66/66 dans les deux langues (E1).</li><li><strong>Attend ton accord</strong> : ajouter la limite I1 (profil premium non écrit côté serveur) au § 6 de la référence, FR et EN.</li><li><strong>Attend ton accord</strong> : remplacer la liste de suppression du § 4 par un renvoi à l'inventaire, et y mentionner les cinq familles perdues.</li><li><strong>Attend ton accord</strong> : dégraisser les passages T1/T2/T3 du document de référence (le contenu va dans le <code>PLAN</code>, rien n'est perdu).</li><li><strong>Attend ton accord</strong> : corriger F1/F2/F3 au passage.</li></ol>
+<p>Dis-moi lesquels tu valides — je les applique par lots, et je régénère les <code>.html</code> à chaque fois (<code>node outils/md-to-html.mjs</code>), puis je relance <code>node outils/verifier-docs.mjs</code> pour prouver qu'aucun Markdown et son HTML ne divergent.</p>
+</main>
+<footer>Généré depuis REVUE-DOCS-REFERENCE-2026-10-08.md par outils/md-to-html.mjs — ne pas modifier ce fichier à la main.</footer>
+</body>
+</html>

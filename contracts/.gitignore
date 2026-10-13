@@ -1,0 +1,17 @@
+# Dependencies
+node_modules
+
+# Lockfiles
+bun.lock
+
+# Rust / Cargo build artifacts
+target/debug
+target/release
+target/sbpf-solana-solana
+target/.rustc_info.json
+
+# Anchor
+.anchor
+
+# OS files
+.DS_Store

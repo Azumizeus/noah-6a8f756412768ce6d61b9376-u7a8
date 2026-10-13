@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="fr" data-lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BuildPact — Guide du projet</title>
+<style>
+  :root {
+    --bg: #030308;
+    --panel: rgba(153, 69, 255, 0.05);
+    --border: rgba(255, 255, 255, 0.08);
+    --violet: #9945FF;
+    --neon: #14F195;
+    --gold: #FFD700;
+    --nova: #FF2E93;
+    --ink: #c9c9d8;
+    --ink-dim: #6f6f8a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: radial-gradient(ellipse at 50% -10%, rgba(153,69,255,0.15), transparent 60%), var(--bg);
+    color: #fff;
+    font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.6;
+  }
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: rgba(3,3,8,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  header .brand { font-weight: 700; font-size: 1.1rem; }
+  header .brand span { color: var(--violet); }
+  .lang-toggle {
+    display: flex;
+    gap: 4px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px;
+    background: rgba(255,255,255,0.03);
+  }
+  .lang-toggle button {
+    border: none;
+    background: transparent;
+    color: var(--ink-dim);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 150ms;
+  }
+  .lang-toggle button.active {
+    background: var(--violet);
+    color: #fff;
+  }
+  main { max-width: 880px; margin: 0 auto; padding: 40px 24px 100px; }
+  nav.toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 40px;
+  }
+  nav.toc a {
+    font-size: 0.78rem;
+    color: var(--ink);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+  }
+  nav.toc a:hover { border-color: rgba(153,69,255,0.4); color: #fff; }
+  h1 { font-size: 2rem; margin: 0 0 8px; }
+  .eyebrow {
+    font-family: monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--neon);
+    text-transform: uppercase;
+  }
+  .subtitle { color: var(--ink); max-width: 640px; }
+  section { margin-top: 56px; scroll-margin-top: 90px; }
+  h2 {
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+  }
+  h2 .num {
+    font-family: monospace;
+    color: var(--violet);
+    font-size: 0.9rem;
+  }
+  h3 { font-size: 1.02rem; color: #fff; margin-top: 28px; }
+  p, li { color: var(--ink); font-size: 0.94rem; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin: 14px 0;
+    backdrop-filter: blur(8px);
+  }
+  .card.warn { border-color: rgba(255,215,0,0.3); }
+  .card.done { border-color: rgba(20,241,149,0.3); }
+  .card.new { border-color: rgba(255,46,147,0.35); }
+  .tag {
+    display: inline-block;
+    font-family: monospace;
+    font-size: 0.68rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-bottom: 8px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .tag.p1 { background: rgba(255,80,80,0.15); color: #ff8080; }
+  .tag.p2 { background: rgba(255,180,60,0.15); color: #ffb43c; }
+  .tag.done { background: rgba(20,241,149,0.15); color: var(--neon); }
+  .tag.new { background: rgba(255,46,147,0.15); color: var(--nova); }
+  code {
+    background: rgba(255,255,255,0.06);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+  }
+  pre {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 0.82rem;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.86rem; margin: 12px 0; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  th { color: var(--ink-dim); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; }
+  .steps { counter-reset: step; list-style: none; padding: 0; }
+  .steps li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 36px;
+    margin-bottom: 14px;
+  }
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(153,69,255,0.2);
+    color: var(--violet);
+    font-weight: 700;
+    font-size: 0.78rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .pill-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+  .pill {
+    font-size: 0.72rem;
+    font-family: monospace;
+    padding: 3px 9px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    color: var(--ink);
+  }
+  .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: middle; }
+  footer {
+    text-align: center;
+    padding: 40px 24px;
+    color: var(--ink-dim);
+    font-size: 0.78rem;
+    border-top: 1px solid var(--border);
+  }
+  [data-en] { display: none; }
+  html[data-lang="en"] [data-fr] { display: none; }
+  html[data-lang="en"] [data-en] { display: inline; }
+  html[data-lang="en"] div[data-en],
+  html[data-lang="en"] li[data-en],
+  html[data-lang="en"] section[data-en],
+  html[data-lang="en"] p[data-en] { display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Build<span>Pact</span> — <span data-fr>Guide</span><span data-en>Guide</span></div>
+  <div class="lang-toggle">
+    <button id="btn-fr" class="active" onclick="setLang('fr')">FR</button>
+    <button id="btn-en" onclick="setLang('en')">EN</button>
+  </div>
+</header>
+
+<main>
+  <p class="eyebrow" data-fr>Documentation projet · mise à jour 19/09/2026</p>
+  <p class="eyebrow" data-en>Project documentation · updated 2026-09-19</p>
+  <h1 data-fr>Guide BuildPact</h1>
+  <h1 data-en>BuildPact Guide</h1>
+  <p class="subtitle" data-fr>Le pacte on-chain des builders Solana — répartition des parts entre
+    co-fondateurs, formalisée avant qu'il y ait de l'argent à partager. Cette page réunit le mode
+    d'emploi, la feuille de route et l'état du projet en un seul endroit consultable dans le navigateur.</p>
+  <p class="subtitle" data-en>The on-chain pact for Solana builders — founder equity split, formalized
+    before there's any money to share. This page brings together the user guide, the roadmap, and the
+    project's current state in one browsable place.</p>
+
+  <nav class="toc">
+    <a href="#quoi" data-fr>1. Le produit</a><a href="#quoi" data-en>1. The product</a>
+    <a href="#emploi" data-fr>2. Mode d'emploi</a><a href="#emploi" data-en>2. User guide</a>
+    <a href="#recent" data-fr>3. Changements récents</a><a href="#recent" data-en>3. Recent changes</a>
+    <a href="#roadmap" data-fr>4. Feuille de route</a><a href="#roadmap" data-en>4. Roadmap</a>
+    <a href="#outillage" data-fr>5. Outillage Claude</a><a href="#outillage" data-en>5. Claude tooling</a>
+  </nav>
+
+  <!-- 1. LE PRODUIT -->
+  <section id="quoi">
+    <h2><span class="num">01</span><span data-fr>Le produit</span><span data-en>The product</span></h2>
+    <p data-fr>Un porteur de projet (« founder ») crée un <strong>Project</strong> on-chain avec des
+      membres et leurs parts en points de base. Les devs postulent, s'approuvent mutuellement, le
+      founder finalise — la répartition devient immuable. Les backers financent via un vault PDA en
+      escrow ; la distribution est automatique : 2 % protocole, 98 % aux membres selon leurs parts.</p>
+    <p data-en>A project owner (the "founder") creates an on-chain <strong>Project</strong> with
+      members and their basis-point shares. Devs apply, mutually approve each other, the founder
+      finalizes — the split becomes immutable. Backers fund through an escrow vault PDA; distribution
+      is automatic: 2% protocol fee, 98% to members per their share.</p>
+    <table>
+      <tr><th data-fr>Élément</th><th data-en>Item</th><th>Valeur</th></tr>
+      <tr><td data-fr>Réseau</td><td data-en>Network</td><td>Solana devnet</td></tr>
+      <tr><td>Program ID</td><td></td><td><code>9quyDwntXDBhNhTmrfCf7xEXVFaxYMB83BwPEUeqVoUJ</code></td></tr>
+      <tr><td>Stack</td><td></td><td>Anchor 0.31.1 · React 19 · Vite 8 · TypeScript · Supabase</td></tr>
+      <tr><td data-fr>Production</td><td data-en>Production</td><td><code>buildpact-solana.vercel.app</code></td></tr>
+    </table>
+  </section>
+
+  <!-- 2. MODE D'EMPLOI -->
+  <section id="emploi">
+    <h2><span class="num">02</span><span data-fr>Mode d'emploi</span><span data-en>User guide</span></h2>
+
+    <h3 data-fr>Créer un pact</h3>
+    <h3 data-en>Create a pact</h3>
+    <ol class="steps">
+      <li data-fr>Connecter un wallet Solana (devnet) depuis n'importe quelle page.</li>
+      <li data-en>Connect a Solana wallet (devnet) from any page.</li>
+      <li data-fr>Depuis le dashboard, lancer « Créer un pact » : titre, description, rôles et parts (total 10 000 bps).</li>
+      <li data-en>From the dashboard, start "Create a pact": title, description, roles and shares (total 10,000 bps).</li>
+      <li data-fr>Inviter des membres ou laisser le pact ouvert au marketplace pour candidatures.</li>
+      <li data-en>Invite members, or leave the pact open on the marketplace for applications.</li>
+      <li data-fr>Chaque membre approuve — une fois tous approuvés, le founder finalise on-chain.</li>
+      <li data-en>Each member approves — once everyone has approved, the founder finalizes on-chain.</li>
+    </ol>
+
+    <h3 data-fr>Profil — dashboard en grille libre</h3>
+    <h3 data-en>Profile — free-grid dashboard</h3>
+    <p data-fr>La page <code>#/profil</code> est une grille entièrement libre : chaque bloc (formulaire
+      de profil, pacts &amp; gains, contact, chat, progression, quêtes, wallet) se déplace par la
+      poignée <code>⠿⠿</code> en haut de chaque carte, et se redimensionne par le coin bas-droit. La
+      disposition est sauvegardée automatiquement par wallet — personne ne repart de zéro à la
+      prochaine visite.</p>
+    <p data-en>The <code>#/profile</code> page is a fully free grid: every block (profile form, pacts
+      &amp; earnings, contact, chat, progression, quests, wallet) is dragged by the <code>⠿⠿</code>
+      handle at the top of each card, and resized from the bottom-right corner. The layout is saved
+      automatically per wallet — nobody starts from scratch on their next visit.</p>
+
+    <h3 data-fr>Personnaliser le thème</h3>
+    <h3 data-en>Customize the theme</h3>
+    <p data-fr>Depuis « Paramètres » sur la page profil : cinq palettes d'accent au choix, plus un mode
+      clair/sombre indépendant.</p>
+    <p data-en>From "Settings" on the profile page: five accent palettes to choose from, plus an
+      independent light/dark mode.</p>
+    <div class="pill-row">
+      <span class="pill"><span class="swatch" style="background:#9945FF"></span>violet</span>
+      <span class="pill"><span class="swatch" style="background:#22D3EE"></span>cyan</span>
+      <span class="pill"><span class="swatch" style="background:#E8B84B"></span>aurum</span>
+      <span class="pill"><span class="swatch" style="background:#1A1814;border:1px solid #555"></span>atelier</span>
+      <span class="pill"><span class="swatch" style="background:#FF2E93"></span>nova</span>
+    </div>
+
+    <h3 data-fr>Financer et distribuer</h3>
+    <h3 data-en>Fund and distribute</h3>
+    <p data-fr>Sur la fiche d'un pact finalisé : le bouton vert (couleur réservée aux mouvements de
+      SOL dans toute l'app) déclenche fund / distribute / claim. La page Trésorerie liste chaque
+      mouvement avec son <code>tx_sig</code>, cliquable vers l'explorateur — la chaîne reste la seule
+      source de vérité.</p>
+    <p data-en>On a finalized pact's page: the green button (a color reserved app-wide for SOL
+      movements) triggers fund / distribute / claim. The Treasury page lists every movement with its
+      <code>tx_sig</code>, clickable to the explorer — the chain remains the only source of truth.</p>
+  </section>
+
+  <!-- 3. CHANGEMENTS RECENTS -->
+  <section id="recent">
+    <h2><span class="num">03</span><span data-fr>Changements récents</span><span data-en>Recent changes</span></h2>
+    <p data-fr>Session du 19 septembre 2026 — détail complet dans <code>FEUILLE_DE_ROUTE.md</code>.</p>
+    <p data-en>Session from September 19, 2026 — full detail in <code>FEUILLE_DE_ROUTE.md</code>.</p>
+
+    <div class="card done">
+      <span class="tag done" data-fr>RÉSOLU</span><span class="tag done" data-en>RESOLVED</span>
+      <h3 style="margin-top:6px" data-fr>Incident de synchronisation Noah ↔ GitHub</h3>
+      <h3 style="margin-top:6px" data-en>Noah ↔ GitHub sync incident</h3>
+      <p data-fr>Noah n'avait poussé sur GitHub qu'une seule fois depuis la création du dépôt — 143
+        commits restaient bloqués localement. Résolu en recréant un dépôt GitHub propre et en le
+        reconnectant à Noah et à Vercel. Nouvelle règle du projet : jamais plus de 5 fichiers modifiés
+        par passe de synchronisation.</p>
+      <p data-en>Noah had only pushed to GitHub once, right when the repo was created — 143 commits
+        stayed stuck locally. Fixed by recreating a clean GitHub repo and reconnecting it to Noah and
+        Vercel. New project rule: never more than 5 files changed per sync pass.</p>
+    </div>
+
+    <div class="card warn">
+      <span class="tag p2" data-fr>À SAVOIR</span><span class="tag p2" data-en>GOOD TO KNOW</span>
+      <h3 style="margin-top:6px" data-fr>Déploiement auto parfois bloqué (plan Hobby)</h3>
+      <h3 style="margin-top:6px" data-en>Auto-deploy sometimes blocked (Hobby plan)</h3>
+      <p data-fr>Un déploiement déclenché par push GitHub peut être refusé si l'auteur du commit
+        n'est pas reconnu comme collaborateur Vercel. Solution : déployer en CLI —
+        <code>git pull &amp;&amp; vercel --prod</code> — un déploiement CLI n'est jamais concerné par
+        cette restriction.</p>
+      <p data-en>A deployment triggered by a GitHub push can be refused if the commit author isn't
+        recognized as a Vercel collaborator. Fix: deploy via CLI —
+        <code>git pull &amp;&amp; vercel --prod</code> — a CLI deploy is never subject to this
+        restriction.</p>
+    </div>
+
+    <div class="card new">
+      <span class="tag new">NOVA</span>
+      <h3 style="margin-top:6px" data-fr>Nouvelle palette vive + chantier UI "fun"</h3>
+      <h3 style="margin-top:6px" data-en>New vivid palette + "fun" UI effort</h3>
+      <p data-fr>Palette <strong>Nova</strong> (magenta électrique + lime) ajoutée au sélecteur.
+        Premier pas d'un chantier plus large déjà validé : vrai thème clair, micro-animations,
+        cartes en glassmorphism, personnalisation du profil (bannière, cadre d'avatar par rang),
+        et un passage WCAG AA sur les contrastes.</p>
+      <p data-en>The <strong>Nova</strong> palette (electric magenta + lime) was added to the
+        selector. First step of a larger, already-approved effort: a real light theme,
+        micro-animations, glassmorphism cards, profile personalization (banner, rank-based avatar
+        frame), and a WCAG AA contrast pass.</p>
+    </div>
+
+    <div class="card done">
+      <span class="tag done" data-fr>CORRIGÉ</span><span class="tag done" data-en>FIXED</span>
+      <h3 style="margin-top:6px" data-fr>Scroll infini sur le profil</h3>
+      <h3 style="margin-top:6px" data-en>Infinite scroll on profile</h3>
+      <p data-fr>Un bug de breakpoint hérité laissait des blocs de la grille libre poussés à des
+        dizaines de milliers de pixels plus bas, et d'autres écrasés sur 1 pixel de large. Les deux
+        sont désormais détectés et corrigés automatiquement au chargement.</p>
+      <p data-en>A legacy breakpoint bug left free-grid blocks pushed tens of thousands of pixels
+        down, and others crushed to 1 pixel wide. Both are now detected and fixed automatically on
+        load.</p>
+    </div>
+  </section>
+
+  <!-- 4. ROADMAP -->
+  <section id="roadmap">
+    <h2><span class="num">04</span><span data-fr>Feuille de route</span><span data-en>Roadmap</span></h2>
+    <p data-fr>Classée par risque décroissant, pas par envie. Détail complet dans <code>FEUILLE_DE_ROUTE.md</code>.</p>
+    <p data-en>Ordered by decreasing risk, not by preference. Full detail in <code>FEUILLE_DE_ROUTE.md</code>.</p>
+
+    <div class="card">
+      <span class="tag p1">P1</span>
+      <h3 style="margin-top:6px" data-fr>Confirmer le binaire déployé sur devnet</h3>
+      <h3 style="margin-top:6px" data-en>Confirm the deployed devnet binary</h3>
+      <p data-fr>Statut : non vérifié. <code>node scripts/idl-check.mjs</code> tranche sans clé
+        privée ni transaction.</p>
+      <p data-en>Status: unverified. <code>node scripts/idl-check.mjs</code> settles it with no
+        private key and no transaction.</p>
+    </div>
+    <div class="card">
+      <span class="tag p2">P2</span>
+      <h3 style="margin-top:6px" data-fr>Verrouiller le bucket de stockage</h3>
+      <h3 style="margin-top:6px" data-en>Lock down the storage bucket</h3>
+      <p data-fr>Les policies de la table sont fermées, l'upload de fichier brut vers le bucket ne
+        l'est pas encore.</p>
+      <p data-en>Table policies are closed; raw file upload to the bucket isn't locked down yet.</p>
+    </div>
+    <div class="card">
+      <span class="tag p2">P3</span>
+      <h3 style="margin-top:6px" data-fr>Vérifier l'appartenance sur les mises à jour</h3>
+      <h3 style="margin-top:6px" data-en>Verify membership on updates</h3>
+      <p data-fr>La signature prouve qui poste, pas s'il en a le droit sur ce pact précis.</p>
+      <p data-en>The signature proves who posts, not whether they belong to that specific pact.</p>
+    </div>
+    <div class="card">
+      <span class="tag p2">P4</span>
+      <h3 style="margin-top:6px" data-fr>Tests d'intégration des Edge Functions</h3>
+      <h3 style="margin-top:6px" data-en>Edge Function integration tests</h3>
+      <p data-fr>Six fonctions portent toute la sécurité en écriture ; aucune n'est testée
+        automatiquement.</p>
+      <p data-en>Six functions carry all write-side security; none are automatically tested.</p>
+    </div>
+  </section>
+
+  <!-- 5. OUTILLAGE -->
+  <section id="outillage">
+    <h2><span class="num">05</span><span data-fr>Outillage Claude</span><span data-en>Claude tooling</span></h2>
+    <p data-fr>Installés localement dans <code>.claude/</code> (exclu du dépôt git — outillage de
+      travail, pas du code applicatif) : ~40 agents et ~48 skills, couvrant Solana/Anchor,
+      Metaplex, Jupiter, Pyth, Helius, ainsi qu'un pack générique de bonnes pratiques de
+      développement (spec-driven, TDD, revue de code, sécurité, CI/CD…).</p>
+    <p data-en>Installed locally under <code>.claude/</code> (excluded from the git repo — working
+      tooling, not application code): ~40 agents and ~48 skills, covering Solana/Anchor, Metaplex,
+      Jupiter, Pyth, Helius, plus a generic pack of development best practices (spec-driven, TDD,
+      code review, security, CI/CD…).</p>
+  </section>
+</main>
+
+<footer data-fr>BuildPact Protocol · Devnet · Non audité — usage devnet uniquement</footer>
+<footer data-en style="display:none">BuildPact Protocol · Devnet · Unaudited — devnet use only</footer>
+
+<script>
+  function setLang(lang) {
+    document.documentElement.setAttribute('data-lang', lang);
+    document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    document.querySelectorAll('footer[data-fr]').forEach(el => el.style.display = lang === 'fr' ? 'block' : 'none');
+    document.querySelectorAll('footer[data-en]').forEach(el => el.style.display = lang === 'en' ? 'block' : 'none');
+    try { localStorage.setItem('buildpact_guide_lang', lang); } catch {}
+  }
+  try {
+    const saved = localStorage.getItem('buildpact_guide_lang');
+    if (saved === 'en') setLang('en');
+  } catch {}
+</script>
+
+</body>
+</html>

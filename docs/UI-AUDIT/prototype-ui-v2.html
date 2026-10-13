@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BuildPact — Prototype UI v2 (multi-pages + thèmes)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════ TOKENS VERROUILLÉS (skill buildpact-design) ═══════════ */
+/* Base : sombre (mode par défaut) */
+:root {
+  --bg:     #0a0a14;
+  --panel:  #111120;
+  --panel2: #151529;
+  --line:   rgba(255,255,255,.1);
+  --muted:  #9292aa;
+  --ink400: #b0b0c7;
+  --white:  #f7f7fb;
+  --violet: #9945ff;
+  --green:  #14f195;
+  --amber:  #ffcf5a;
+  --red:    #ff718b;
+  --ink900: #0a0a14;
+  /* Accent + produits dérivés par défaut (thème violet) */
+  --accent:#9945ff; --accent-soft:rgba(153,69,255,.12); --accent-hover:#b06bff;
+}
+
+/* ═══════════ MODE CLAIR (via data-mode="light") ═══════════ */
+:root[data-mode="light"] {
+  --bg:     #f4f4f8;
+  --panel:  #ffffff;
+  --panel2: #f0f0f6;
+  --line:   rgba(10,10,20,.10);
+  --muted:  #6a6a85;
+  --ink400: #44445c;
+  --white:  #0a0a14;
+  --ink900: #f7f7fb; /* inversé : sert de "texte sur accent" */
+}
+
+/* ═══════════ 3 HABILLAGES ═══════════ */
+:root[data-theme="volta"]   { --accent:#14f195; --accent-soft:rgba(20,241,149,.10); --accent-hover:#4ff5b4; }
+:root[data-theme="ember"]   { --accent:#ffcf5a; --accent-soft:rgba(255,207,90,.10); --accent-hover:#ffd97f; }
+:root[data-theme="solana"]  { --accent:#9945ff; --accent-soft:rgba(153,69,255,.12); --accent-hover:#b06bff; }
+
+:root, body { background:var(--bg); }
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  color:var(--white); font-family:'Inter',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased; min-height:100dvh;
+}
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image:linear-gradient(color-mix(in srgb, var(--accent) 6%, transparent) 1px, transparent 1px),
+                   linear-gradient(90deg, color-mix(in srgb, var(--accent) 6%, transparent) 1px, transparent 1px);
+  background-size:42px 42px;
+  mask-image:linear-gradient(#000 65%, transparent 100%);
+  -webkit-mask-image:linear-gradient(#000 65%, transparent 100%);
+}
+a { color:inherit; text-decoration:none; }
+button { font-family:inherit; cursor:pointer; border:none; background:none; }
+button:focus-visible, a:focus-visible, .theme-dot:focus-visible {
+  outline:2px solid var(--accent); outline-offset:2px; border-radius:6px;
+}
+
+/* ═══════════ NAV ═══════════ */
+.nav {
+  position:sticky; top:0; z-index:50;
+  display:flex; align-items:center; gap:26px;
+  padding:13px 28px;
+  background:var(--nav-bg, rgba(10,10,20,.85)); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+}
+:root[data-mode="light"] { --nav-bg: rgba(255,255,255,.85); }
+.logo { display:flex; align-items:center; gap:9px; font-weight:800; font-size:16.5px; letter-spacing:-.3px; }
+.logo-mark {
+  width:29px; height:29px; border-radius:8px; background:var(--accent);
+  display:grid; place-items:center; font-weight:800; color:var(--ink900); font-size:14px;
+  transition:background .25s;
+}
+.logo em { color:var(--accent); font-style:normal; transition:color .25s; }
+.nav-links { display:flex; gap:2px; flex:1; }
+.nav-links button {
+  padding:8px 12px; border-radius:8px; font-size:13.5px; font-weight:500; color:var(--ink400);
+  transition:color .15s;
+}
+.nav-links button:hover { color:var(--white); }
+.nav-links button.active { color:var(--white); background:var(--panel2); }
+.nav-right { display:flex; align-items:center; gap:12px; }
+.theme-dot-row { display:flex; gap:6px; padding:5px 8px; background:var(--panel); border:1px solid var(--line); border-radius:10px; }
+.theme-dot {
+  width:18px; height:18px; border-radius:6px; cursor:pointer;
+  transition:transform .15s, box-shadow .15s;
+}
+.theme-dot:hover { transform:scale(1.15); }
+.theme-dot.on { box-shadow:0 0 0 2px var(--bg), 0 0 0 3.5px var(--white); }
+.mode-dot {
+  width:18px; height:18px; border-radius:6px; background:var(--accent);
+  transition:transform .15s;
+}
+.mode-dot.sun { background:var(--amber); border-radius:50%; }
+.mode-dot.on { box-shadow:0 0 0 2px var(--bg), 0 0 0 3.5px var(--white); }
+.btn-lang { display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; font-size:11px; font-weight:700; }
+.btn-lang span { padding:6px 9px; color:var(--muted); cursor:pointer; }
+.btn-lang .on { background:var(--panel2); color:var(--white); }
+.btn-wallet {
+  display:flex; align-items:center; gap:8px;
+  background:var(--accent); color:var(--ink900);
+  border-radius:9px; padding:9px 15px; font-size:13.5px; font-weight:700;
+  transition:background .25s, opacity .15s;
+}
+.btn-wallet:hover { opacity:.9; }
+.wallet-dot { width:8px; height:8px; border-radius:50%; background:var(--ink900); }
+
+/* ═══════════ PAGES ═══════════ */
+.page { max-width:1180px; margin:0 auto; padding:48px 28px 80px; }
+.page-head { margin-bottom:28px; }
+.eyebrow {
+  font-size:11.5px; font-weight:700; letter-spacing:.13em; color:var(--accent);
+  text-transform:uppercase; margin-bottom:8px; transition:color .25s;
+}
+h1 { font-size:36px; font-weight:800; letter-spacing:-.025em; line-height:1.1; }
+h1 span { color:var(--accent); transition:color .25s; }
+.sub { color:var(--ink400); font-size:14.5px; line-height:1.6; margin-top:10px; max-width:560px; }
+h2 { font-size:21px; font-weight:800; letter-spacing:-.02em; margin:36px 0 16px; }
+
+/* Cards */
+.grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.grid2 { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+.grid5 { display:grid; grid-template-columns:repeat(5,1fr); gap:13px; }
+.card {
+  background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px;
+  transition:border-color .2s, transform .2s;
+}
+.card:hover { border-color:color-mix(in srgb, var(--accent) 35%, transparent); transform:translateY(-2px); }
+.card h3 { font-size:15px; font-weight:700; margin-bottom:8px; }
+.card p { color:var(--muted); font-size:12.5px; line-height:1.6; }
+
+/* Stats */
+.stat-row { display:grid; grid-template-columns:repeat(3,1fr); gap:13px; }
+.stat { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px 22px; }
+.stat .label { color:var(--muted); font-size:10.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+.stat .val { font-size:27px; font-weight:800; margin-top:8px; letter-spacing:-.02em; }
+.stat .hint { color:var(--ink400); font-size:11.5px; margin-top:6px; }
+.up { color:var(--green); }
+.warn-c { color:var(--amber); }
+
+/* Pills / filtres */
+.pill-row { display:flex; gap:8px; margin:18px 0 22px; flex-wrap:wrap; }
+.pill {
+  padding:8px 16px; border-radius:999px; border:1px solid var(--line);
+  color:var(--ink400); font-size:12.5px; font-weight:600; transition:all .15s;
+}
+.pill:hover { border-color:var(--line); color:var(--white); }
+.pill.on { background:var(--accent-soft); border-color:var(--accent); color:var(--white); }
+
+/* Pact card */
+.pact-card { background:var(--panel); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+.pact-banner { height:110px; background:linear-gradient(120deg, var(--accent-soft), transparent 70%), var(--panel2); position:relative; }
+.pact-banner::after {
+  content:'NEBULA'; position:absolute; inset:0; display:grid; place-items:center;
+  font-weight:800; letter-spacing:.35em; color:var(--accent); opacity:.35; font-size:20px;
+  transition:color .25s;
+}
+.pact-body { padding:16px 18px; }
+.pact-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.badge-vert { background:rgba(20,241,149,.12); color:var(--green); padding:4px 11px; border-radius:999px; font-size:11px; font-weight:700; }
+.badge-amb  { background:rgba(255,207,90,.12); color:var(--amber); padding:4px 11px; border-radius:999px; font-size:11px; font-weight:700; }
+.pact-body h3 { font-size:15px; font-weight:700; }
+.pact-desc { color:var(--ink400); font-size:12.5px; line-height:1.55; margin:6px 0 14px;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.meta { display:flex; gap:18px; color:var(--muted); font-size:11.5px; margin-bottom:14px; }
+.meta b { color:var(--white); font-weight:700; font-family:ui-monospace,monospace; font-size:12px; }
+.mono { font-family:ui-monospace,monospace; }
+.addr { font-family:ui-monospace,monospace; font-size:11px; color:var(--muted); }
+.addr:hover { color:var(--white); }
+.bar { height:5px; border-radius:99px; overflow:hidden; display:flex; margin-top:12px; }
+.bar span { height:100%; }
+.bar i0 { background:var(--accent); }
+.bar i1 { background:var(--green); }
+.bar i2 { background:var(--amber); }
+.bar i3 { background:var(--red); }
+.btn-card {
+  width:100%; padding:10px; border-radius:9px; margin-top:14px;
+  background:var(--accent-soft); color:var(--white);
+  border:1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  font-size:12.5px; font-weight:700; transition:all .15s;
+}
+.btn-card:hover { border-color:var(--accent); }
+
+/* Wizard */
+.wizard { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:26px; max-width:640px; }
+.step-bar { display:flex; gap:8px; margin-bottom:22px; }
+.step-dot { height:4px; flex:1; border-radius:99px; background:var(--panel2); }
+.step-dot.done { background:var(--accent); }
+.field label { display:block; font-size:12.5px; font-weight:600; margin-bottom:7px; color:var(--ink400); }
+.field input, .field textarea {
+  width:100%; background:var(--panel2); border:1px solid var(--line); border-radius:10px;
+  padding:11px 13px; color:var(--white); font-size:13.5px; font-family:inherit;
+  transition:border-color .15s;
+}
+.field input:focus, .field textarea:focus { outline:none; border-color:var(--accent); }
+.field .hint { color:var(--muted); font-size:11px; margin-top:6px; }
+
+/* Alertes */
+.alert { border-radius:10px; padding:12px 14px; font-size:12.5px; line-height:1.55; }
+.alert-ok { background:rgba(20,241,149,.08); border:1px solid rgba(20,241,149,.3); color:var(--green); }
+.alert-warn { background:rgba(255,207,90,.08); border:1px solid rgba(255,207,90,.3); color:var(--amber); }
+.alert-err { background:rgba(255,113,139,.08); border:1px solid rgba(255,113,139,.3); color:var(--red); }
+
+/* Tx states */
+.tx-row { display:flex; justify-content:space-between; align-items:center; padding:13px 0; border-bottom:1px solid var(--line); }
+.tx-row:last-child { border-bottom:none; }
+.tx-row .l { font-size:13px; font-weight:600; }
+.tx-row .d { color:var(--muted); font-size:11px; margin-top:3px; }
+.amount { font-family:ui-monospace,monospace; font-weight:700; font-size:13px; }
+
+.hero { padding:60px 0 46px; }
+.hero-cta { display:flex; gap:11px; margin-top:30px; flex-wrap:wrap; }
+.btn-primary {
+  background:var(--accent); color:var(--ink900); border-radius:12px;
+  padding:13px 22px; font-size:14px; font-weight:700;
+  transition:background .25s, opacity .15s;
+}
+.btn-primary:hover { opacity:.9; }
+.btn-secondary {
+  background:var(--panel); color:var(--white); border:1px solid var(--line); border-radius:12px;
+  padding:13px 22px; font-size:14px; font-weight:600; transition:border-color .15s;
+}
+.btn-secondary:hover { border-color:color-mix(in srgb, var(--accent) 40%, transparent); }
+.hero-badges { display:flex; gap:18px; margin-top:24px; color:var(--muted); font-size:12px; flex-wrap:wrap; }
+
+.footer {
+  border-top:1px solid var(--line); padding:22px 28px; display:flex; justify-content:space-between;
+  color:var(--muted); font-size:12px;
+}
+.footer .mono { font-size:11px; }
+.proto-banner {
+  position:fixed; bottom:14px; left:50%; transform:translateX(-50%); z-index:99;
+  background:var(--panel); border:1px solid var(--line); border-radius:999px;
+  padding:7px 16px; font-size:11px; color:var(--muted);
+}
+.proto-banner b { color:var(--accent); }
+.hidden { display:none !important; }
+</style>
+</head>
+<body data-theme-hint>
+<nav class="nav">
+  <a class="logo" href="#"><span class="logo-mark">P</span> Build<em>Pact</em></a>
+  <div class="nav-links" role="tablist">
+    <button data-page="accueil" class="active">Accueil</button>
+    <button data-page="pacts">Pacts</button>
+    <button data-page="marketplace">Marketplace</button>
+    <button data-page="treasury">Treasury</button>
+    <button data-page="create">Créer un pact</button>
+  </div>
+  <div class="nav-right">
+    <div class="theme-dot-row" role="group" aria-label="Mode et thème">
+      <button class="mode-dot on" data-mode-set="dark"  title="Sombre"></button>
+      <button class="mode-dot sun" data-mode-set="light" title="Clair"></button>
+    </div>
+    <div class="theme-dot-row" role="group" aria-label="Habillage">
+      <button class="theme-dot on" style="background:#9945ff" data-theme-set="solana" aria-label="Solana violet"></button>
+      <button class="theme-dot" style="background:#14f195" data-theme-set="volta" aria-label="Volta vert"></button>
+      <button class="theme-dot" style="background:#ffcf5a" data-theme-set="ember" aria-label="Ember ambre"></button>
+    </div>
+    <button class="btn-wallet"><span class="wallet-dot"></span> Connexion…</button>
+  </div>
+</nav>
+
+<!-- ───── PAGE : ACCUEIL ───── -->
+<main id="page-accueil" class="page">
+  <div class="hero">
+    <p class="eyebrow">Revenue share protocol · Solana devnet</p>
+    <h1>Le pacte on-chain des <span>builders Solana</span>.</h1>
+    <p class="sub">Crée un projet, définis les rôles et les parts, reçois des candidatures, verrouille l'accord on-chain — puis reçois des fonds distribués automatiquement, sans virement manuel.</p>
+    <div class="hero-cta">
+      <button class="btn-primary" onclick="go('create')">Créer un pact →</button>
+      <button class="btn-secondary" onclick="go('marketplace')">Explorer le Marketplace</button>
+    </div>
+    <div class="hero-badges">
+      <span>🔒 <b>PDA seeds canoniques</b></span>
+      <span>✓ <b>Distribution automatique</b></span>
+      <span>✓ 100% vérifiable on-chain</span>
+    </div>
+  </div>
+
+  <h2>Le protocole en direct</h2>
+  <div class="stat-row">
+    <div class="stat"><p class="label">Total value locked</p><p class="val">0.003 SOL</p><p class="hint">Solde live des vaults — lu on-chain</p></div>
+    <div class="stat"><p class="label">Distribué</p><p class="val">13.690 SOL</p><p class="hint">Dernières distributions aux membres</p></div>
+    <div class="stat"><p class="label">Pactes actifs</p><p class="val">3</p><p class="hint">Comptes Project on-chain, devnet</p></div>
+  </div>
+
+  <h2>Comment ça marche</h2>
+  <div class="grid5">
+    <div class="card"><span style="color:var(--accent);font-weight:800;font-size:12px">01</span><h3>Créer</h3><p>Décris ton projet, tes rôles et ta part. Choisis ce que tu cherches : devs, investisseurs, ou les deux.</p></div>
+    <div class="card"><span style="color:var(--accent);font-weight:800;font-size:12px">02</span><h3>Rejoindre</h3><p>Les membres postulent avec leur wallet, leur rôle et leur part négociée. Chacun approuve on-chain.</p></div>
+    <div class="card"><span style="color:var(--accent);font-weight:800;font-size:12px">03</span><h3>Finaliser</h3><p>Une fois toutes les approbations réunies et les parts à 100%, le founder verrouille le pact on-chain.</p></div>
+    <div class="card"><span style="color:var(--accent);font-weight:800;font-size:12px">04</span><h3>Financer</h3><p>Les backers envoient des fonds dans le vault du projet — escrow PDA, entièrement vérifiable.</p></div>
+    <div class="card"><span style="color:var(--accent);font-weight:800;font-size:12px">05</span><h3>Distribuer</h3><p>2% protocole, 98% réparti automatiquement entre les membres selon leurs parts. Aucun virement manuel.</p></div>
+  </div>
+
+  <h2>Pourquoi BuildPact</h2>
+  <div class="grid3">
+    <div class="card"><h3>Solo founder</h3><p>Un fondateur peut cadrer l'idée, publier les besoins, intégrer les membres et verrouiller l'accord sans coordination manuelle des paiements.</p></div>
+    <div class="card"><h3>La confiance, c'est du code</h3><p>Rôles, parts, approbation, escrow et distribution deviennent vérifiables on-chain — plus besoin de contrats informels.</p></div>
+    <div class="card"><h3>Où travaillent les devs ?</h3><p>Sur GitHub et Discord. BuildPact ne les remplace pas : il apporte la couche confiance + paiement qui leur manque.</p></div>
+  </div>
+</main>
+
+<!-- ───── PAGE : PACTS ───── -->
+<main id="page-pacts" class="page hidden">
+  <div class="page-head">
+    <p class="eyebrow">Pacts</p>
+    <h1>Tous les projets <span>on-chain</span></h1>
+  </div>
+  <div class="pill-row">
+    <button class="pill on">Tous</button>
+    <button class="pill">Finalisés</button>
+    <button class="pill">Ouverts</button>
+    <button class="pill">⊘ Mes pacts</button>
+  </div>
+
+  <div class="grid2">
+    <div class="pact-card">
+      <div class="pact-banner"></div>
+      <div class="pact-body">
+        <div class="pact-top">
+          <h3 style="margin:0">Nebula Agent OS</h3>
+          <span class="badge-vert">Finalisé</span>
+        </div>
+        <p class="pact-desc">Cockpit IA multi-agents local-first pensé comme un OS personnel — pour entrepreneurs, créatifs et pros du…</p>
+        <div class="meta">
+          <span>Vault <b>0.000891 SOL</b></span>
+          <span>Membres <b>2</b></span>
+        </div>
+        <div class="bar"><i0 style="width:32%;background:var(--accent)"></i0><i1 style="width:68%;background:var(--green)"></i1></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px" class="mono">
+          <span class="addr">AVhV…BWSH · 32%</span><span class="addr">3vbA…KFFL · 68%</span>
+        </div>
+        <button class="btn-card">Voir le pact →</button>
+      </div>
+    </div>
+
+    <div class="pact-card">
+      <div class="pact-banner" style="background:linear-gradient(120deg, rgba(20,241,149,.10), transparent 70%)"></div>
+      <div class="pact-body">
+        <div class="pact-top">
+          <h3 style="margin:0">Nexus Code : Health</h3>
+          <span class="badge-amb">Ouvert</span>
+        </div>
+        <p class="pact-desc">Agent de codage IA open source (licence MIT) qui s'exécute directement dans le terminal, une app de bureau ou une extension d'IDE…</p>
+        <div class="meta">
+          <span>Vault <b>0.000891 SOL</b></span>
+          <span>Membres <b>4</b></span>
+        </div>
+        <div class="bar"><i0 style="width:30%;background:var(--accent)"></i0><i1 style="width:23%;background:var(--green)"></i1><i2 style="width:19%;background:var(--amber)"></i2><i3 style="width:28%;background:var(--red)"></i3></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px" class="mono">
+          <span class="addr">AVhV…BWSH · 30%</span><span class="addr">DMg5…2hxa · 19%</span>
+        </div>
+        <button class="btn-card">Voir la fiche →</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ───── PAGE : MARKETPLACE ───── -->
+<main id="page-marketplace" class="page hidden">
+  <div class="page-head">
+    <p class="eyebrow">Marketplace</p>
+    <h1>Qui cherche <span>quoi</span>.</h1>
+    <p class="sub">Tous les projets on-chain (devnet), triés par ce qu'ils cherchent : des membres ou des fonds.</p>
+  </div>
+  <div class="stat-row">
+    <div class="stat"><p class="label">Recrutent</p><p class="val">1</p><p class="hint">Projets ouverts, parts à pourvoir</p></div>
+    <div class="stat"><p class="label">Cherchent des fonds</p><p class="val">3</p><p class="hint">Projets finalisés, prêts à recevoir</p></div>
+    <div class="stat"><p class="label">Pactes au total</p><p class="val">4</p><p class="hint">Tous les Project on-chain visibles</p></div>
+  </div>
+  <div class="pill-row">
+    <button class="pill on">Tous</button>
+    <button class="pill">⌕ Recrutent</button>
+    <button class="pill">♡ Cherchent des fonds</button>
+  </div>
+  <div class="grid2">
+    <div class="pact-card" style="cursor:pointer" onclick="go('pacts')">
+      <div class="pact-banner" style="height:96px"></div>
+      <div class="pact-body">
+        <div class="pact-top"><h3 style="margin:0">Nebula Agent OS</h3><span class="badge-vert">♡ Cherche des fonds</span></div>
+        <p class="pact-desc">Cockpit IA multi-agents local-first…</p>
+        <div class="meta"><span>Vault <b>0.000891 SOL</b></span><span>Membres <b>2</b></span></div>
+        <button class="btn-card">Voir la fiche →</button>
+      </div>
+    </div>
+    <div class="pact-card" style="cursor:pointer" onclick="go('pacts')">
+      <div class="pact-banner" style="height:96px;background:linear-gradient(120deg, rgba(20,241,149,.10), transparent 70%)"></div>
+      <div class="pact-body">
+        <div class="pact-top"><h3 style="margin:0">Nexus Code : Health</h3><span class="badge-vert">♡ Cherche des fonds</span></div>
+        <p class="pact-desc">Agent de codage IA open source (licence MIT)…</p>
+        <div class="meta"><span>Vault <b>0.000891 SOL</b></span><span>Membres <b>4</b></span></div>
+        <button class="btn-card">Voir la fiche →</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ───── PAGE : TREASURY ───── -->
+<main id="page-treasury" class="page">
+  <div class="page-head">
+    <p class="eyebrow">Treasury</p>
+    <h1>Trésorerie du <span>protocole</span></h1>
+    <p class="sub">Données réelles lues directement depuis les vaults on-chain (devnet).</p>
+  </div>
+  <div class="stat-row">
+    <div class="stat"><p class="label">Total value locked</p><p class="val">0.003 SOL</p><p class="hint">Solde live des vaults</p></div>
+    <div class="stat"><p class="label">Distribué</p><p class="val up">13.690 SOL</p><p class="hint">Dans les dernières transactions</p></div>
+    <div class="stat"><p class="label">Pending claims</p><p class="val warn-c">0.003 SOL</p><p class="hint">98% du TVL — réclamable par les membres</p></div>
+  </div>
+  <h2 style="display:flex;justify-content:space-between;align-items:center">Flux récents
+    <span style="display:flex;gap:8px">
+      <button class="pill">↓ Export CSV</button>
+      <button class="pill">↓ Export JSON</button>
+    </span>
+  </h2>
+  <div class="card" style="padding:6px 20px">
+    <div class="tx-row"><div><div class="l">Distribute — répartition aux membres · Nebula Agent OS</div><div class="d">il y a 22 j</div></div><span class="amount" style="color:var(--red)">−1.201 SOL</span></div>
+    <div class="tx-row"><div><div class="l">Fund — dépôt dans le vault · Nexus Code : Health</div><div class="d">il y a 22 j</div></div><span class="amount" style="color:var(--green)">+0.800 SOL</span></div>
+    <div class="tx-row"><div><div class="l">Distribute — répartition aux membres · Nexus Code : Health</div><div class="d">il y a 25 j</div></div><span class="amount" style="color:var(--red)">−1.700 SOL</span></div>
+    <div class="tx-row"><div><div class="l">Fund — dépôt dans le vault · Nebula Agent OS</div><div class="d">il y a 23 j</div></div><span class="amount" style="color:var(--green)">+0.500 SOL</span></div>
+  </div>
+</main>
+
+<!-- ───── PAGE : CREATE ───── -->
+<main id="page-create" class="page">
+  <div class="page-head">
+    <p class="eyebrow">Nouveau pact on-chain</p>
+    <h1>Créer un <span>Pact</span></h1>
+    <p class="sub">Décris ton projet, tes rôles et ta part — visible publiquement on-chain.</p>
+  </div>
+  <div class="wizard">
+    <div class="step-bar"><div class="step-dot done"></div><div class="step-dot"></div><div class="step-dot"></div></div>
+    <div class="field" style="margin-bottom:16px">
+      <label for="pt">Titre du projet</label>
+      <input id="pt" placeholder="ex : Nebula Agent OS" maxlength="80">
+      <p class="hint">80 octets max (titre on-chain)</p>
+    </div>
+    <div class="field" style="margin-bottom:16px">
+      <label for="pd">Pitch</label>
+      <textarea id="pd" rows="4" placeholder="Ce que tu construis, en une phrase."></textarea>
+      <p class="hint">D'ici l'upgrade programme : 500 → 1000 octets</p>
+    </div>
+    <div class="field" style="margin-bottom:20px">
+      <label>Rôles recherchés — cumulables</label>
+      <div class="pill-row" style="margin:8px 0 0">
+        <button class="pill on">Lead Dev</button>
+        <button class="pill">UX/UI</button>
+        <button class="pill">Community</button>
+        <button class="pill">Investor</button>
+        <button class="pill">+ rôle</button>
+      </div>
+    </div>
+    <button class="btn-primary" style="width:100%" onclick="go('pacts')">Créer le projet on-chain →</button>
+  </div>
+</main>
+
+<footer class="footer">
+  <span>© 2026 BuildPact Protocol · Devnet</span>
+  <span class="mono">Prototype v2 · tokens verrouillés · Construit sur Solana · Non audité</span>
+</footer>
+
+<script>
+// ─── Navigation par onglets ───
+const pages = ['accueil','pacts','marketplace','treasury','create'];
+function go(name) {
+  pages.forEach(p => document.getElementById('page-' + p).classList.toggle('hidden', p !== name));
+  document.querySelectorAll('.nav-links button').forEach(b =>
+    b.classList.toggle('active', b.dataset.page === name));
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('.nav-links button').forEach(b =>
+  b.addEventListener('click', () => go(b.dataset.page)));
+
+// ─── Thèmes cliquables (3 habillages) + mode sombre/clair ───
+const THEMES = ['solana','volta','ember'];
+document.querySelectorAll('[data-theme-set]').forEach(d =>
+  d.addEventListener('click', () => {
+    document.documentElement.dataset.theme = d.dataset.themeSet;
+    document.querySelectorAll('.theme-dot').forEach(x => x.classList.toggle('on', x === d));
+  }));
+
+// Switch Sombre / Clair
+document.querySelectorAll('[data-mode-set]').forEach(d =>
+  d.addEventListener('click', () => {
+    document.documentElement.dataset.mode = d.dataset.modeSet;
+    document.querySelectorAll('[data-mode-set]').forEach(x =>
+      x.classList.toggle('on', x === d));
+  }));
+</script>
+</body>
+</html>

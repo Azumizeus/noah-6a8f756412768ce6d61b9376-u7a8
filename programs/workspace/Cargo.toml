@@ -1,0 +1,44 @@
+[package]
+name = "workspace"
+version = "0.1.0"
+description = "BuildPact — partage de revenus on-chain entre co-fondateurs"
+edition = "2021"
+# Version de Rust embarquée dans platform-tools v1.48 (cargo 1.84).
+# Avec resolver = "3" à la racine, cargo exclut automatiquement toute crate
+# exigeant un Rust plus récent (edition2024) au lieu de casser au download.
+rust-version = "1.84.0"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "workspace"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+# Cette liste doit rester cohérente avec [dependencies] ci-dessous :
+# une entrée `anchor-spl/idl-build` sans anchor-spl dans les dépendances
+# fait échouer `anchor build` à l'étape IDL, et inversement.
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[lints.rust]
+unexpected_cfgs = { level = "allow", check-cfg = ['cfg(feature, values("custom-heap", "custom-panic", "anchor-debug"))'] }
+
+# ---------------------------------------------------------------------------
+# Manifeste ALIGNÉ sur le build qui a produit le binaire validé 28/28 tests.
+#
+# anchor-spl et mpl-token-metadata ne sont importées nulle part dans lib.rs.
+# Elles ne sont donc pas liées dans le .so : le linker Rust élimine les crates
+# non référencées. Les retirer du manifeste ne réduit PAS la taille du binaire
+# — cela ne change que le temps de compilation.
+#
+# Conclusion : on ne touche pas à ce fichier. Il est identique à celui utilisé
+# pour la compilation et les tests, donc le déploiement ne comporte aucun écart
+# entre ce qui a été vérifié et ce qui sera envoyé on-chain.
+# ---------------------------------------------------------------------------
+[dependencies]
+anchor-lang = { version = "0.31.1", features = ["init-if-needed"] }
+anchor-spl = "0.31.1"
+mpl-token-metadata = "5"

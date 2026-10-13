@@ -1,0 +1,24 @@
+-- ═══════════════════════════════════════════════════════════════════
+-- Ferme l'INSERT public sur project_chat_messages.
+--
+-- La policy `project_chat_public_insert` était en `with check (true)` et
+-- `author_wallet` est une simple colonne texte renseignée par le client.
+-- Conséquence : n'importe qui pouvait publier un message en se présentant
+-- sous le wallet d'un autre, y compris celui du founder. Ce n'est pas
+-- seulement du spam, c'est de l'usurpation d'identité.
+--
+-- Aucune policy SQL ne peut corriger ça — Postgres n'a aucun moyen de
+-- savoir qui contrôle réellement une clé Solana. Seule une signature
+-- ed25519 le prouve, et elle se vérifie hors de la base.
+--
+-- L'envoi passe donc désormais par l'Edge Function `chat-moderate`
+-- (action 'post'), qui valide la signature, lie celle-ci au contenu via
+-- un hash SHA-256, applique un rate limit, puis insère en service_role en
+-- renseignant `author_wallet` À PARTIR DU WALLET SIGNATAIRE.
+--
+-- La policy SELECT publique est CONSERVÉE volontairement : c'est elle qui
+-- fait fonctionner la lecture et l'abonnement Realtime de ChatBox (un
+-- abonnement postgres_changes est filtré par les droits SELECT du client
+-- abonné). La retirer rendrait le chat muet.
+-- ═══════════════════════════════════════════════════════════════════
+drop policy if exists project_chat_public_insert on public.project_chat_messages;

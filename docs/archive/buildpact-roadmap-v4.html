@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BuildPact — Roadmap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a14;--panel:#111120;--panel2:#151529;--line:rgba(255,255,255,.1);--muted:#9292aa;--white:#f7f7fb;--violet:#9945ff;--green:#14f195;--amber:#ffcf5a;--red:#ff718b;--shadow:0 24px 70px rgba(0,0,0,.3)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--white);font-family:Inter,system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;background-image:linear-gradient(rgba(153,69,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(153,69,255,.045) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,#000,transparent 80%)}
+body:after{content:"";position:fixed;z-index:-1;width:720px;height:720px;top:-380px;left:-250px;background:radial-gradient(circle,rgba(153,69,255,.2),transparent 66%);pointer-events:none}
+.shell{width:min(1080px,calc(100% - 40px));margin:0 auto;padding:42px 0 90px}
+.topline{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:34px}
+.brand{display:flex;align-items:center;gap:10px;color:var(--white);font-weight:800;letter-spacing:.12em}
+.mark{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--violet),var(--green));color:#0a0a14;font-size:14px}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:28px;align-items:end;margin-bottom:28px}
+.eyebrow{color:var(--green);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px}
+.hero h1{font-size:clamp(38px,6vw,64px);line-height:.98;letter-spacing:-.065em;margin:0 0 17px;max-width:720px}
+.gradient{background:linear-gradient(110deg,#fff 20%,#c7a3ff 59%,var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--muted);max-width:590px;font-size:15px;line-height:1.7;margin:0}
+.count-card{background:linear-gradient(145deg,rgba(153,69,255,.17),rgba(20,241,149,.06));border:1px solid rgba(153,69,255,.32);border-radius:18px;padding:22px 24px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.count-card:before{content:"";position:absolute;right:-30px;top:-50px;width:150px;height:150px;border:1px solid rgba(20,241,149,.25);border-radius:50%;box-shadow:0 0 0 20px rgba(20,241,149,.03),0 0 0 40px rgba(20,241,149,.02)}
+.count-label{color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.count{font-variant-numeric:tabular-nums;font-size:clamp(20px,3vw,30px);font-weight:800;letter-spacing:-.04em;margin:11px 0 7px;color:var(--green)}
+.count-note{font-size:11px;color:var(--muted)}
+section.block{margin:0 0 28px}
+.section-kicker{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.section-kicker:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 14px var(--green)}
+.locked{background:rgba(17,17,32,.8);border:1px solid var(--line);border-radius:18px;padding:20px 22px;backdrop-filter:blur(12px)}
+.locked-grid{display:grid;grid-template-columns:1fr 1.2fr .7fr .55fr;gap:10px}
+.fact{min-width:0;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);border-radius:11px;padding:12px 13px}
+.fact span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px}
+.fact code{color:#d8c5ff;font:11px ui-monospace,SFMono-Regular,monospace;word-break:break-all}
+.fact strong{font-size:14px;color:var(--green)}
+.callout{border-left:3px solid var(--violet);padding:16px 20px;background:rgba(153,69,255,.08);border-radius:0 14px 14px 0;color:var(--white);font-size:14px;line-height:1.7}
+.callout strong{color:var(--green)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.card{background:linear-gradient(145deg,var(--panel),#0d0d1a);border:1px solid var(--line);border-radius:14px;padding:18px}
+.card h3{margin:0 0 10px;font-size:14px}
+.card ul{margin:0;padding-left:18px;color:var(--muted);font-size:13px;line-height:1.7}
+.card li{margin:4px 0}
+.card li strong{color:var(--white)}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:800;letter-spacing:.02em}
+.badge.ok{background:rgba(20,241,149,.12);color:var(--green)}
+.badge.wait{background:rgba(255,207,90,.12);color:var(--amber)}
+.badge.crit{background:rgba(255,113,139,.14);color:var(--red)}
+h2.h{font-size:16px;margin:0 0 16px;letter-spacing:-.02em}
+.progress-wrap{display:flex;justify-content:space-between;align-items:end;margin:0 0 9px}
+.progress-wrap h2{font-size:14px;margin:0;letter-spacing:-.02em}
+.progress-meta{color:var(--muted);font-size:12px}
+.progress{height:9px;background:#1b1b2c;border-radius:99px;overflow:hidden;margin-bottom:28px}
+.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--violet),var(--green));border-radius:inherit;transition:width .45s cubic-bezier(.2,.8,.2,1);box-shadow:0 0 18px rgba(20,241,149,.35)}
+.phase{border:1px solid var(--line);background:rgba(17,17,32,.78);border-radius:16px;margin:0 0 13px;overflow:hidden;box-shadow:0 8px 35px rgba(0,0,0,.12);transition:border-color .2s}
+.phase:hover{border-color:rgba(153,69,255,.4)}
+.phase-head{width:100%;display:flex;align-items:center;gap:14px;padding:18px 20px;background:none;border:0;color:inherit;text-align:left;cursor:pointer}
+.chevron{width:25px;height:25px;border:1px solid var(--line);border-radius:8px;display:grid;place-items:center;color:var(--muted);transition:transform .25s;flex:none}
+.phase.open .chevron{transform:rotate(90deg);color:var(--green)}
+.phase-title{font-weight:700;font-size:14px;flex:1}
+.phase-date{color:var(--muted);font-size:11px;margin-right:10px}
+.tbadge{font-variant-numeric:tabular-nums;background:rgba(255,255,255,.07);border:1px solid var(--line);color:var(--muted);padding:5px 9px;border-radius:99px;font-size:11px;white-space:nowrap}
+.phase.complete .tbadge{color:var(--green);border-color:rgba(20,241,149,.25);background:rgba(20,241,149,.08)}
+.phase-body{display:none;padding:0 20px 18px 59px}
+.phase.open .phase-body{display:block}
+.task{display:flex;align-items:center;gap:11px;padding:10px 12px;border-top:1px solid rgba(255,255,255,.055);min-height:43px}
+.task:hover{background:rgba(255,255,255,.025)}
+.task input{appearance:none;flex:none;width:17px;height:17px;border:1px solid #5d5d75;border-radius:5px;background:#0c0c18;cursor:pointer;position:relative}
+.task input:checked{background:var(--green);border-color:var(--green)}
+.task input:checked:after{content:"✓";position:absolute;color:#06130f;font-size:12px;font-weight:800;left:3px;top:0}
+.task label{cursor:pointer;font-size:13px;line-height:1.4;flex:1;color:#e7e7ef}
+.task.done label{color:#77778d;text-decoration:line-through}
+.owner{color:#77778d;font-size:9px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+ol.priority{margin:0;padding-left:20px;color:var(--muted);font-size:13.5px;line-height:1.8}
+ol.priority li strong{color:var(--white)}
+.footer{display:flex;justify-content:space-between;align-items:center;margin-top:28px}
+.footnote{color:#68687f;font-size:11px}
+.reset{border:1px solid rgba(255,255,255,.14);background:transparent;color:var(--muted);border-radius:9px;padding:9px 13px;cursor:pointer;font:600 11px Inter}
+.reset:hover{color:var(--white);border-color:var(--violet)}
+@media(max-width:760px){.shell{width:min(100% - 26px,620px);padding-top:24px}.topline{margin-bottom:25px}.topline span{display:none}.hero{grid-template-columns:1fr;gap:20px}.hero h1{font-size:42px}.locked-grid{grid-template-columns:1fr 1fr}.fact:nth-child(2){grid-column:span 2}.phase-date{display:none}.phase-body{padding-left:20px}.owner{display:none}.footer{gap:15px;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div role="note" style="margin:0;padding:14px 18px;background:#fff4d6;color:#3d2c00;border-bottom:3px solid #b7791f;font:15px/1.55 Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"><strong>⚠️ DOCUMENT HISTORIQUE — conservé tel quel.</strong> Feuille de route du <strong>hackathon (août 2026)</strong> : elle décrit l'app d'AVANT le shell premium et n'est plus à jour. **Doublon** : dernière itération HTML, avant le shell premium. Référence actuelle : <code>ETAT-APP-2026-10-08-FR.html</code> (section « Carte des documents »).</div>
+<main class="shell">
+  <div class="topline"><div class="brand"><span class="mark">✦</span> BUILDPACT</div><span>Solana · Devnet · NOAH 02</span></div>
+
+  <section class="hero">
+    <div>
+      <div class="eyebrow">Roadmap · 20—26 août 2026</div>
+      <h1>Construire.<br><span class="gradient">Pacter.</span> Livrer.</h1>
+      <p>Le pacte des builders — la confiance, c'est du code. Plan de sprint BuildPact jusqu'à la soumission du hackathon NOAH 02 : une checklist vivante, conçue pour garder le produit net, testable et prêt à démontrer.</p>
+    </div>
+    <div class="count-card"><div class="count-label">Temps restant avant soumission</div><div class="count" id="countdown">Calcul en cours…</div><div class="count-note">Deadline · 26 août 2026 à 12:00</div></div>
+  </section>
+
+  <section class="block locked"><div class="section-kicker">Infos verrouillées</div>
+    <div class="locked-grid">
+      <div class="fact"><span>Program ID</span><code>9quyDwntXDBhNhTmrfCf7xEXVFaxYMB83BwPEUeqVoUJ</code></div>
+      <div class="fact"><span>Config PDA</span><code>5yRNQhn7W6sCFNVWhTWbZowQRKL7dNSaqYkpTtPxEF2C</code></div>
+      <div class="fact"><span>Fee protocole</span><strong>200 bps · 2%</strong></div>
+      <div class="fact"><span>Réseau</span><strong>Devnet</strong></div>
+    </div>
+    <div style="margin-top:12px;color:var(--green);font-size:12px;font-weight:700">✓ 12 / 12 tests passés · Config PDA actif on-chain</div>
+    <div style="margin-top:6px;color:var(--muted);font-size:11px">Protocol fee wallet : <code style="color:#d8c5ff">AVhVM29hD6YRLb2DujhKfF8Ger4bgaCpx9P93Q3XBWSH</code></div>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Matrice fiabilité wallet · 21-22/08</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:12px">
+      <span class="badge ok">Desktop (Brave + Chrome) : Phantom / Backpack / Solflare — 100% (approve+finalize+distribute reconfirmés le 22/08)</span>
+      <span class="badge ok">Seeker mobile : Backpack — fiable</span>
+      <span class="badge crit">Seeker mobile : Phantom / Solflare — boucle de signature, à éviter en démo</span>
+      <span class="badge ok">22/08 : rotation RPC + déconnexion + message d'erreur — 3 bugs corrigés</span>
+    </div>
+    <div style="margin-top:8px;color:#68687f;font-size:11px">Détail complet : voir <code>SEED-VAULT-MWA-KNOWN-ISSUES.md</code> à la racine du dossier projet. Les écrans "Simulation Unavailable"/429 restants viennent du RPC propre au wallet (congestion devnet publique), pas de BuildPact.</div>
+  </section>
+
+  <section class="block">
+    <div class="section-kicker">Le concept</div>
+    <div class="callout"><strong>BuildPact</strong> est le hub de confiance pour les builders Solana : publier une idée, préciser les rôles recherchés et la répartition %, recevoir des candidatures, puis inscrire l'accord on-chain lorsque toutes les parties l'ont approuvé. Les revenus sont distribués automatiquement et des backers peuvent financer via escrow.<br><br><strong>Positionnement :</strong> GitHub et Discord restent l'espace de travail. BuildPact est la couche confiance + paiement — accord on-chain, escrow et distribution. <strong>V1</strong> = parts garanties ; <strong>V2</strong> = jalons, réputation on-chain, remplacement de membres.</div>
+  </section>
+
+  <section class="block">
+    <div class="section-kicker">État réel</div>
+    <div class="cards">
+      <div class="card"><h3><span class="badge ok">✅ FAIT</span></h3><ul>
+        <li>Programme Anchor Devnet complet : <strong>create_project · add_member · remove_member · approve · finalize · fund · distribute · close_project</strong>.</li>
+        <li>Ancien programme fermé (<code>266V7…59kQ</code>, irrécupérable) → reconstruit et redéployé sous un nouveau Program ID.</li>
+        <li>Config PDA recréée, frais protocole 200 bps actifs on-chain.</li>
+        <li>Frontend (IDL + PROGRAM_ID) resynchronisé et pushé sur GitHub.</li>
+        <li>Frontend React + Vite + TS sur Vercel, wizard 3 étapes, reprise pact orphelin, AddMemberModal.</li>
+        <li><strong>Test end-to-end confirmé</strong> : create → add_member → approve → finalize → fund → distribute, transactions Solscan à l'appui, sur les 3 wallets desktop (Phantom/Backpack/Solflare × Brave/Chrome) + Backpack sur Seeker mobile.</li>
+        <li>Fiabilité wallet mobile diagnostiquée à fond : VersionedTransaction, ComputeBudget, RPC dédié Helius et <code>appIdentity.uri</code> dynamique corrigés et mergés.</li>
+        <li>Treasury reconstruite avec de vraies données on-chain (TVL, distributions, historique de transactions Solscan) — l'ancienne version 100% mock supprimée.</li>
+        <li>Program ID mort corrigé sur la page Docs (affichage dynamique via <code>constants.ts</code>).</li>
+        <li>Page <strong>About</strong> créée : pitch produit + roadmap client V1/V2, séparée de cette roadmap interne.</li>
+        <li>Page <strong>Docs</strong> refondue : guide interactif étape par étape, FAQ accordéon, glossaire, détail technique/sécurité.</li>
+        <li>Modale <strong>Créer un Pact</strong> passée en pleine largeur, design premium, stepper visuel.</li>
+        <li>Audit A11y WCAG 2.1 AA complet + 4 corrections appliquées : contraste des CTA violets, contraste texte secondaire, association labels/inputs, cibles tactiles des boutons ×.</li>
+        <li>Audit "signes vibe-codé" passé sur tout le code — rien de critique, choix de branding (violet/neon, emojis) assumés et conservés.</li>
+        <li><strong>22/08 :</strong> repo confirmé sur le bon Program ID partout — plus de dossier divergent, point de vigilance définitivement résolu.</li>
+        <li><strong>22/08 :</strong> Marketplace/Discovery livré (cards, filtres, pagination client 12/page) — parcours investisseur testé de bout en bout.</li>
+        <li><strong>22/08 :</strong> multi-rôles cumulables par membre (CreatePactWizard + AddMemberModal), AddMemberModal agrandie avec total des parts visible.</li>
+        <li><strong>22/08 :</strong> logo, bannière et vidéo de présentation (lien YouTube/Loom/Vimeo) par projet + fil d'avancement où les membres postent des mises à jour.</li>
+        <li><strong>22/08 :</strong> liens "Historique on-chain" (projet + vault) sur chaque pact — kit démo juges renforcé, preuve permanente indépendante de Supabase.</li>
+        <li><strong>22/08 :</strong> 3 bugs de fiabilité wallet réels corrigés (rotation RPC pendant les retries, déconnexion qui se reconnectait seule, message d'erreur RPC brut).</li>
+        <li><strong>22/08 :</strong> clé privée de wallet déployeur exposée dans l'historique git — purgée intégralement (<code>git filter-repo</code> + force-push).</li>
+        <li><strong>23/08 :</strong> section "À propos" bilingue FR/EN par projet (<code>about_text</code> / <code>about_text_en</code> en base, édition dans la modale média, affichage adapté à la langue active).</li>
+        <li><strong>23/08 :</strong> suppression de message de chat réservée au founder (policy Supabase dédiée, bouton "×" visible seulement pour le créateur du pact).</li>
+        <li><strong>23/08 :</strong> pact de test "Café" masqué de toutes les listes publiques (<code>HIDDEN_PACT_PDAS</code>).</li>
+        <li><strong>23/08 :</strong> clarification UX du wizard — bandeau explicite : le pact est déjà publié dès l'étape 1 (créateur seul), pas besoin d'atteindre 100% avant de fermer la fenêtre.</li>
+        <li><strong>24/08 :</strong> audit sécurité manuel complet du programme Anchor (<code>lib.rs</code>, 558 lignes) — PDA canoniques, signer/ownership checks, arithmétique <code>checked_*</code> partout, protection du solde loyer-exempt en <code>distribute()</code> — <strong>aucun problème critique</strong>, programme non retouché avant le freeze.</li>
+        <li><strong>24/08 :</strong> script de démo live + storyboard vidéo 3 min prêts (<code>DEMO-SCRIPT.md</code>), incluant le contenu complet du 3ᵉ pact réel "Seeker Nexus OS".</li>
+        <li><strong>24/08 :</strong> audit UI/UX complet de l'app en conditions réelles (Chrome) — 3 bugs trouvés et corrigés : (1) Dashboard n'affichait aucun logo/bannière (hook <code>useProjectMedia</code> jamais branché, contrairement à la Marketplace) ; (2) le wizard peut tronquer silencieusement la description on-chain à 280 octets en pleine liste de rôles (ex. "UX/UI" → "UX/U") — ajout d'un avertissement en temps réel avant création, la donnée déjà gravée reste inchangée (pas d'instruction de mise à jour côté programme) ; (3) le Treasury public comptait le pact de test "Café" dans le TVL et le flux "Recent flows" — filtré comme partout ailleurs.</li>
+      </ul></div>
+      <div class="card"><h3><span class="badge wait">⏳ EN COURS</span></h3><ul>
+        <li><code>cancel_pact</code> UI (creator) — pas fait, scope réduit (pas critique démo).</li>
+        <li>Upload final des logos/bannières IA + textes About EN sur les 3 pacts réels — prompts et traductions déjà livrés, à coller côté app.</li>
+        <li>Publication des 2 "Avancement du projet" déjà rédigés (Nexus Code, Seeker Strike).</li>
+        <li>Build + push des 3 correctifs du 24/08 depuis le Codespace (voir commandes fournies).</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <div class="progress-wrap"><h2 class="h">Progression du sprint</h2><div class="progress-meta" id="globalMeta">0 / 0 tâches</div></div>
+  <div class="progress"><i id="progressFill"></i></div>
+  <section id="phases" aria-label="Roadmap BuildPact"></section>
+
+  <section class="block" style="margin-top:14px">
+    <div class="section-kicker">Prochaines étapes priorisées</div>
+    <ol class="priority">
+      <li><strong>P0 — Démo &amp; découverte :</strong> fiche projet, Marketplace, parcours investisseur, scénario on-chain complet.</li>
+      <li><strong>P1 — Cœur produit :</strong> page profil membre, claim rewards UI.</li>
+      <li><strong>P2 — Confiance :</strong> audit sécurité complet, puis déploiement mainnet (post-hackathon).</li>
+      <li><strong>P3 — Acquisition :</strong> landing page publique.</li>
+    </ol>
+  </section>
+
+  <section class="block">
+    <div class="section-kicker">Points critiques produit</div>
+    <div class="callout">La démo doit montrer clairement <strong>dans quoi on investit</strong> (description, roadmap, équipe), <strong>quels rôles sont ouverts</strong> avec leur % share, et <strong>qui cherche quoi</strong> : « cherche dev front 15% », « cherche investisseur 10K USDC ».</div>
+  </section>
+
+  <section class="block">
+    <div class="section-kicker">Angle pitch juges</div>
+    <div class="cards">
+      <div class="card"><h3>Solo founder</h3><p style="color:var(--muted);font-size:13px;line-height:1.7;margin:0">Un fondateur peut cadrer l'idée, publier les besoins, intégrer les membres et verrouiller l'accord sans coordination manuelle des paiements.</p></div>
+      <div class="card"><h3>Confiance = code</h3><p style="color:var(--muted);font-size:13px;line-height:1.7;margin:0">Rôles, parts, approbation, escrow et distribution deviennent vérifiables on-chain. La V1 se concentre sur les parts garanties.</p></div>
+      <div class="card"><h3>« Où travaillent les devs ? »</h3><p style="color:var(--muted);font-size:13px;line-height:1.7;margin:0">Sur GitHub et Discord. BuildPact ne les remplace pas : il apporte la couche confiance + paiement.</p></div>
+    </div>
+  </section>
+
+  <div class="footer"><div class="footnote">BuildPact Protocol · checklist locale persistante · mise à jour 24/08 — audit sécurité programme (aucun problème critique) + audit UI/UX app (3 bugs corrigés) + script démo prêt, à 2 jours du freeze (26/08 12:00)</div><button class="reset" id="reset" type="button">↺ Réinitialiser la progression</button></div>
+</main>
+<script>
+const DEADLINE=new Date('2026-08-26T12:00:00');
+const KEY='buildpact-roadmap-v2';
+const DATA=[
+ {title:'FAIT — Fondations & fixes',date:'AVANT LE 20/08',open:false,tasks:[
+  ['Programme Anchor / Rust déployé — create_project · add_member · approve · finalize · fund · distribute','RUSTIK',true],['Frontend React + Vite + TypeScript déployé sur Vercel','NEXUS',true],['Wizard de création en 3 étapes','NEXUS',true],['Reprise d’un pact orphelin','NEXUS',true],['AddMemberModal + ajout membre on-chain','RUSTIK',true],['Correctifs build — blockhash frais, retry et rotation RPC','CIPHER',true]
+ ]},
+ {title:'J-6 — Nettoyage & Rust',date:'20 AOÛT 2026',open:false,tasks:[
+  ['Supprimer les vestiges Vault (frontend + state)','NEXUS',false],
+  ['close_project — creator, non finalisé, vault vide → rent','RUSTIK',true],
+  ['remove_member — creator si pending + tests','RUSTIK',true],
+  ['Redéployer devnet + mettre à jour l’IDL frontend','CIPHER',true]
+ ]},
+ {title:'Hors plan — Programme fermé & reconstruction',date:'20—21 AOÛT 2026',open:true,tasks:[
+  ['Diagnostic : ancien program 266V7…59kQ définitivement fermé (solana program show)','CIPHER',true],
+  ['Nouveau keypair de programme généré + Anchor.toml/declare_id! synchronisés','AEGIS',true],
+  ['Wallet déployeur restauré et financé (devnet)','AEGIS',true],
+  ['Redéployé sous 9quyDwnt…qVoUJ + Config PDA recréée (200 bps)','RUSTIK',true],
+  ['IDL + PROGRAM_ID frontend resynchronisés et pushés sur GitHub','NEXUS',true],
+  ['Test end-to-end complet sur le nouveau program','CIPHER',true]
+ ]},
+ {title:'Hors plan — Diagnostic wallet mobile (Seed Vault / MWA)',date:'21 AOÛT 2026 · journée entière',open:true,tasks:[
+  ['VersionedTransaction (v0) au lieu de Transaction legacy — bug de signature manquante corrigé','CIPHER',true],
+  ['ComputeBudget pré-injecté avant signature — empêche Phantom d’altérer la tx signée','CIPHER',true],
+  ['appIdentity.uri dynamique (window.location.origin) — fix instabilité liée aux redéploiements Vercel','CIPHER',true],
+  ['RPC devnet dédié Helius — fix rate limit 429 du RPC public','CIPHER',true],
+  ['Nonce durable testé en sandbox isolé, puis abandonné — bloqué par les protections anti-phishing natives des wallets','CIPHER',true],
+  ['Matrice de fiabilité établie sur 3 wallets × desktop/mobile — Backpack mobile confirmé, Phantom/Solflare mobile écartés de la démo','CIPHER',true],
+  ['Documentation complète du diagnostic sauvegardée (SEED-VAULT-MWA-KNOWN-ISSUES.md)','CIPHER',true]
+ ]},
+ {title:'Hors plan — Polish produit, données réelles & accessibilité',date:'21 AOÛT 2026 SOIR',open:true,tasks:[
+  ['Treasury : suppression des données mock, reconstruction avec vraies transactions on-chain (TVL, distributions, historique Solscan)','NEXUS',true],
+  ['Docs : Program ID mort remplacé par un affichage dynamique','NEXUS',true],
+  ['Page About créée — pitch produit + roadmap client V1/V2','ECHO',true],
+  ['Docs refondue — guide interactif, FAQ, glossaire, détail sécurité','NEXUS',true],
+  ['Wizard Créer un Pact — pleine largeur, design premium, stepper','VERA',true],
+  ['Audit A11y WCAG 2.1 AA + 4 corrections (contraste CTA, labels, cibles tactiles)','VERA',true],
+  ['Audit "vibe-codé" — rien de critique, branding violet/neon et emojis assumés','VERA',true]
+ ]},
+ {title:'J-5 — Fiche projet détaillée',date:'22 AOÛT 2026',open:true,tasks:[
+  ['Page projet : description, rôles, % shares et équipe','NEXUS',true],
+  ['Boutons Postuler / Financer','NEXUS',true],
+  ['Design premium de la fiche — validation A11y','VERA',true],
+  ['cancel_pact UI (creator)','NEXUS',false]
+ ]},
+ {title:'J-4 — Marketplace / Discovery',date:'22 AOÛT 2026 · CRITIQUE',open:true,tasks:[
+  ['Page Discovery : projets ouverts + filtres','NEXUS',true],
+  ['Cards : pitch, % restant, rôles ouverts et montant financé','NEXUS',true],
+  ['Tester le parcours complet investisseur','CIPHER',true],
+  ['Pagination client (12 projets/page)','NEXUS',true]
+ ]},
+ {title:'Hors plan — Médias projet, fiabilité wallet & kit démo juges',date:'22 AOÛT 2026',open:true,tasks:[
+  ['Multi-rôles cumulables par membre (CreatePactWizard + AddMemberModal)','NEXUS',true],
+  ['Fix définitif bug 6005 — troncature UTF-8 (lead byte orphelin)','CIPHER',true],
+  ['Logo + bannière + vidéo de présentation (Supabase Storage, lien YouTube/Loom/Vimeo)','NEXUS',true],
+  ['Fil d’avancement des membres (texte + lien, chronologique)','NEXUS',true],
+  ['Liens Historique on-chain (projet + vault) sur chaque pact','NEXUS',true],
+  ['AddMemberModal agrandie + total des parts visible','VERA',true],
+  ['Fix rotation RPC pendant les retries (boucle de signature Backpack)','CIPHER',true],
+  ['Fix déconnexion qui se reconnectait seule (autoConnect + localStorage)','CIPHER',true],
+  ['Fix message d’erreur RPC brut illisible dans TxBanner','CIPHER',true],
+  ['Purge historique git — clé privée wallet déployeur exposée','CIPHER',true]
+ ]},
+ {title:'J-3 — Profil builder & chat — ✅ FAIT (terminé en avance le 22/08)',date:'23 AOÛT 2026',tasks:[['Profil builder : signMessage → Edge Function Supabase','NEXUS',true],['Page profil : pacts, gains et historique','NEXUS',true],['Chat simple par projet — Supabase Realtime','NEXUS',true]]},
+ {title:'Hors plan — Vault documents, avatar & notifications',date:'22 AOÛT 2026 · soir/nuit',open:true,tasks:[
+  ['Vault de documents privés par projet (upload membres, review founder, signature + vérif on-chain)','RUSTIK',true],
+  ['Historique des versions de document dans le vault (supersedes_id, dépliage UI)','RUSTIK',true],
+  ['Lien direct partageable vers un document précis du vault','RUSTIK',true],
+  ['Photo de profil (avatar) via signature wallet, affichée dans chat/fil d’avancement','RUSTIK',true],
+  ['Badges de notification nouveau message/document sur les cartes pact (vue Postgres agrégée, jamais le contenu)','RUSTIK',true],
+  ['Export PDF du profil builder (impression ciblée, sans dépendance ajoutée)','NEXUS',true],
+  ['Fix bug réel : erreur fetch() du vault invisible si l’Edge Function pas déployée — try/catch + message explicite','CIPHER',true]
+ ]},
+ {title:'Hors plan — Annuaire builders, contact & notation (sécurisés)',date:'22 AOÛT 2026 · fin de nuit',open:true,tasks:[
+  ['Icône logo / texte BuildPact séparés en 2 liens (accueil marketing vs Dashboard)','NEXUS',true],
+  ['Dashboard priorise les pacts du wallet connecté au lieu des pacts du protocole entier','NEXUS',true],
+  ['Bouton "Discussion & Vault" visible sur chaque carte pact (masqué + réduit sur la fiche pact elle-même)','NEXUS',true],
+  ['Page Profil : mode aperçu (lecture seule) + bouton Modifier, au lieu d’un formulaire permanent','NEXUS',true],
+  ['Fix bug réel : erreurs Postgres masquées par un message générique — colonnes historiques manquantes (available, pseudo) sur builder_profiles ; ALTER TABLE idempotents + vrai message serveur','CIPHER',true],
+  ['Annuaire des builders (/builders) — recherche accent/casse-insensible, filtre disponibilité, fiche détaillée au clic sur une carte','NEXUS',true],
+  ['Niveau de compétence par skill (Débutant/Confirmé/Expert) partout où les compétences apparaissent','NEXUS',true],
+  ['Demandes de contact entre builders — durcies en v2 : signature signMessage obligatoire des 2 côtés, RLS fermée, Edge Function dédiée','RUSTIK',true],
+  ['Notation des builders 1 à 6 étoiles — sécurisée dès le départ (signature + unicité par paire), moyenne publique via vue agrégée','RUSTIK',true],
+  ['Fix bug réel : signature wallet auto-déclenchée à l’ouverture de la boîte de réception contact (popup instable) — remplacé par bouton "Déverrouiller" explicite, même pattern que le vault','CIPHER',true]
+ ]},
+ {title:'J-2 — Sécurité, UX & A11y — ✅ FAIT',date:'24 AOÛT 2026',tasks:[['Audit sécurité : signer / ownership / seeds PDA','CIPHER',true],['Audit UI/UX complet app + 3 bugs trouvés et corrigés (Dashboard médias, troncature description 280o, Treasury pact test)','VERA',true],['Landing page publique','ECHO',true]]},
+ {title:'J-1 — Pitch & démo',date:'25 AOÛT 2026',tasks:[['Script démo : pact → membre → finalize → fund → distribute','AEGIS'],['Vidéo démo 3 min + README premium','ECHO']]},
+ {title:'J-0 — Soumission NOAH 02',date:'26 AOÛT 2026 · DEADLINE 12:00',tasks:[['Freeze code à 12:00 + soumission hackathon','AEGIS'],['Backup vidéo prête si la live demo échoue','ECHO']]}
+];
+let state={};try{state=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){state={}};
+const phases=document.getElementById('phases');
+function taskId(pi,ti){return `buildpact-${pi}-${ti}`}
+function render(){phases.innerHTML='';DATA.forEach((p,pi)=>{const el=document.createElement('article');el.className='phase'+(p.open?' open':'');el.dataset.phase=pi;el.innerHTML=`<button class="phase-head" type="button" aria-expanded="${p.open?'true':'false'}"><span class="chevron">›</span><span class="phase-title">${p.title}</span><span class="phase-date">${p.date}</span><span class="tbadge" id="badge-${pi}">0/${p.tasks.length}</span></button><div class="phase-body"></div>`;const body=el.querySelector('.phase-body');p.tasks.forEach((t,ti)=>{const id=taskId(pi,ti),done=state[id]??!!t[2],row=document.createElement('div');row.className='task'+(done?' done':'');row.innerHTML=`<input type="checkbox" id="${id}" ${done?'checked':''}><label for="${id}">${t[0]}</label><span class="owner">${t[1]}</span>`;row.querySelector('input').addEventListener('change',e=>{state[id]=e.target.checked;localStorage.setItem(KEY,JSON.stringify(state));update()});body.append(row)});el.querySelector('.phase-head').addEventListener('click',()=>{el.classList.toggle('open');el.querySelector('.phase-head').setAttribute('aria-expanded',el.classList.contains('open'))});phases.append(el)});update()}
+function update(){let total=0,done=0;DATA.forEach((p,pi)=>{let pd=0;p.tasks.forEach((t,ti)=>{const checked=state[taskId(pi,ti)]??!!t[2];total++;if(checked){done++;pd++}const row=document.querySelector(`[data-phase="${pi}"] .task:nth-child(${ti+1})`);if(row)row.classList.toggle('done',checked)});const b=document.getElementById('badge-'+pi);b.textContent=`${pd}/${p.tasks.length}`;document.querySelector(`[data-phase="${pi}"]`).classList.toggle('complete',pd===p.tasks.length)});document.getElementById('globalMeta').textContent=`${done} / ${total} tâches · ${total?Math.round(done/total*100):0}%`;document.getElementById('progressFill').style.width=(total?done/total*100:0)+'%'}
+function tick(){let ms=DEADLINE-Date.now(),el=document.getElementById('countdown');if(ms<=0){el.textContent='🏁 Deadline passée';return}let d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5),m=Math.floor(ms%36e5/6e4),s=Math.floor(ms%6e4/1e3);el.textContent=`J-${d} · ${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`}
+document.getElementById('reset').addEventListener('click',()=>{if(confirm('Réinitialiser toutes les tâches ?')){localStorage.removeItem(KEY);state={};render()}});render();tick();setInterval(tick,1000);
+</script>
+</body></html>

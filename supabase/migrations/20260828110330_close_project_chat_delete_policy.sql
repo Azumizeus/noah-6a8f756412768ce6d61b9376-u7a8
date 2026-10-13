@@ -1,0 +1,28 @@
+-- ═══════════════════════════════════════════════════════════════════
+-- Ferme la suppression directe sur project_chat_messages.
+--
+-- Contexte : la migration 20260824000706 avait ajouté
+-- `project_chat_public_delete` en `using (true)`. L'intention était une
+-- modération founder-only, mais le seul contrôle vivait dans ChatBox.tsx
+-- (affichage conditionnel du bouton). Une policy ouverte s'applique à la
+-- clé anon publique : n'importe qui pouvait vider le chat de n'importe
+-- quel projet via un appel REST direct. Le gate client cachait le bouton,
+-- il ne protégeait rien.
+--
+-- Pourquoi on ne la remplace pas par une policy plus fine : le founder est
+-- `project.creator`, une donnée ON-CHAIN inconnue de Postgres. Et une règle
+-- « seul l'auteur » serait creuse — author_wallet est une colonne texte non
+-- authentifiée. Sans preuve cryptographique, aucune règle SQL n'est
+-- applicable ici.
+--
+-- La suppression passe donc par l'Edge Function `chat-moderate`, qui vérifie
+-- signature ed25519 + appartenance on-chain, puis écrit en service_role.
+-- ═══════════════════════════════════════════════════════════════════
+drop policy if exists project_chat_public_delete on public.project_chat_messages;
+
+-- SELECT et INSERT restent publics : c'est le modèle de confiance MVP
+-- assumé du chat (n'importe quel visiteur peut lire, tout wallet connecté
+-- peut écrire). À noter tout de même — l'INSERT ouvert permet d'écrire en
+-- se prétendant un autre wallet. C'est du spoofing d'identité, pas de la
+-- destruction : moins grave qu'un DELETE ouvert, mais à traiter à terme
+-- par la même mécanique de signature.

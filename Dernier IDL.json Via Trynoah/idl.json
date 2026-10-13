@@ -1,0 +1,1117 @@
+{
+  "address": "9quyDwntXDBhNhTmrfCf7xEXVFaxYMB83BwPEUeqVoUJ",
+  "metadata": {
+    "name": "workspace",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "add_member",
+      "discriminator": [
+        13,
+        116,
+        123,
+        130,
+        126,
+        198,
+        57,
+        34
+      ],
+      "accounts": [
+        {
+          "name": "project",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project.creator",
+                "account": "Project"
+              },
+              {
+                "kind": "account",
+                "path": "project.project_id",
+                "account": "Project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "signer": true,
+          "relations": [
+            "project"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "wallet",
+          "type": "pubkey"
+        },
+        {
+          "name": "role",
+          "type": "string"
+        },
+        {
+          "name": "share_bps",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "approve",
+      "discriminator": [
+        69,
+        74,
+        217,
+        36,
+        115,
+        117,
+        97,
+        76
+      ],
+      "accounts": [
+        {
+          "name": "project",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project.creator",
+                "account": "Project"
+              },
+              {
+                "kind": "account",
+                "path": "project.project_id",
+                "account": "Project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "member",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "close_project",
+      "discriminator": [
+        117,
+        209,
+        53,
+        106,
+        93,
+        55,
+        112,
+        49
+      ],
+      "accounts": [
+        {
+          "name": "project",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project.creator",
+                "account": "Project"
+              },
+              {
+                "kind": "account",
+                "path": "project.project_id",
+                "account": "Project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "project"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_project",
+      "discriminator": [
+        148,
+        219,
+        181,
+        42,
+        221,
+        114,
+        145,
+        190
+      ],
+      "accounts": [
+        {
+          "name": "project",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "creator"
+              },
+              {
+                "kind": "arg",
+                "path": "project_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "project_id",
+          "type": "string"
+        },
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "creator_role",
+          "type": "string"
+        },
+        {
+          "name": "creator_share_bps",
+          "type": "u16"
+        },
+        {
+          "name": "protocol_wallet",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "distribute",
+      "discriminator": [
+        191,
+        44,
+        223,
+        207,
+        164,
+        236,
+        126,
+        61
+      ],
+      "accounts": [
+        {
+          "name": "project",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project.creator",
+                "account": "Project"
+              },
+              {
+                "kind": "account",
+                "path": "project.project_id",
+                "account": "Project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "protocol_wallet",
+          "writable": true
+        },
+        {
+          "name": "caller",
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "finalize",
+      "discriminator": [
+        171,
+        61,
+        218,
+        56,
+        127,
+        115,
+        12,
+        217
+      ],
+      "accounts": [
+        {
+          "name": "project",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project.creator",
+                "account": "Project"
+              },
+              {
+                "kind": "account",
+                "path": "project.project_id",
+                "account": "Project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "signer": true,
+          "relations": [
+            "project"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "fund",
+      "discriminator": [
+        218,
+        188,
+        111,
+        221,
+        152,
+        113,
+        174,
+        7
+      ],
+      "accounts": [
+        {
+          "name": "project",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project.creator",
+                "account": "Project"
+              },
+              {
+                "kind": "account",
+                "path": "project.project_id",
+                "account": "Project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "funder",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount_lamports",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "remove_member",
+      "discriminator": [
+        171,
+        57,
+        231,
+        150,
+        167,
+        128,
+        18,
+        55
+      ],
+      "accounts": [
+        {
+          "name": "project",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project.creator",
+                "account": "Project"
+              },
+              {
+                "kind": "account",
+                "path": "project.project_id",
+                "account": "Project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "signer": true,
+          "relations": [
+            "project"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "member_wallet",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "update_description",
+      "discriminator": [
+        192,
+        56,
+        16,
+        166,
+        212,
+        219,
+        112,
+        142
+      ],
+      "accounts": [
+        {
+          "name": "project",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project.creator",
+                "account": "Project"
+              },
+              {
+                "kind": "account",
+                "path": "project.project_id",
+                "account": "Project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "project"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "description",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Project",
+      "discriminator": [
+        205,
+        168,
+        189,
+        202,
+        181,
+        247,
+        142,
+        19
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "DescriptionUpdated",
+      "discriminator": [
+        201,
+        86,
+        125,
+        32,
+        30,
+        42,
+        181,
+        95
+      ]
+    },
+    {
+      "name": "FundsDistributed",
+      "discriminator": [
+        246,
+        28,
+        47,
+        10,
+        202,
+        53,
+        3,
+        232
+      ]
+    },
+    {
+      "name": "MemberAdded",
+      "discriminator": [
+        198,
+        220,
+        228,
+        196,
+        92,
+        235,
+        240,
+        79
+      ]
+    },
+    {
+      "name": "MemberApproved",
+      "discriminator": [
+        174,
+        128,
+        113,
+        88,
+        4,
+        208,
+        86,
+        234
+      ]
+    },
+    {
+      "name": "MemberRemoved",
+      "discriminator": [
+        250,
+        66,
+        3,
+        113,
+        161,
+        10,
+        59,
+        39
+      ]
+    },
+    {
+      "name": "ProjectClosed",
+      "discriminator": [
+        99,
+        119,
+        201,
+        52,
+        106,
+        26,
+        76,
+        87
+      ]
+    },
+    {
+      "name": "ProjectCreated",
+      "discriminator": [
+        192,
+        10,
+        163,
+        29,
+        185,
+        31,
+        67,
+        168
+      ]
+    },
+    {
+      "name": "ProjectFinalized",
+      "discriminator": [
+        206,
+        140,
+        138,
+        3,
+        23,
+        210,
+        23,
+        204
+      ]
+    },
+    {
+      "name": "ProjectFunded",
+      "discriminator": [
+        125,
+        81,
+        242,
+        91,
+        14,
+        66,
+        74,
+        95
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "MathOverflow",
+      "msg": "Math overflow occurred"
+    },
+    {
+      "code": 6001,
+      "name": "InsufficientFunds",
+      "msg": "Insufficient funds"
+    },
+    {
+      "code": 6002,
+      "name": "Unauthorized",
+      "msg": "Unauthorized access"
+    },
+    {
+      "code": 6003,
+      "name": "InactiveAccount",
+      "msg": "Account is inactive"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidAmount",
+      "msg": "Invalid amount"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidParameter",
+      "msg": "Invalid parameter"
+    },
+    {
+      "code": 6006,
+      "name": "TooManyMembers",
+      "msg": "Too many members"
+    },
+    {
+      "code": 6007,
+      "name": "DuplicateMember",
+      "msg": "Duplicate member wallet"
+    },
+    {
+      "code": 6008,
+      "name": "ShareExceeded",
+      "msg": "Total share exceeds 100%"
+    },
+    {
+      "code": 6009,
+      "name": "NotAMember",
+      "msg": "Signer is not a project member"
+    },
+    {
+      "code": 6010,
+      "name": "AlreadyApproved",
+      "msg": "Member has already approved"
+    },
+    {
+      "code": 6011,
+      "name": "NotEnoughMembers",
+      "msg": "Project needs at least two members"
+    },
+    {
+      "code": 6012,
+      "name": "NotAllApproved",
+      "msg": "Not all members have approved"
+    },
+    {
+      "code": 6013,
+      "name": "SharesNotComplete",
+      "msg": "Total shares must equal exactly 100%"
+    },
+    {
+      "code": 6014,
+      "name": "AlreadyFinalized",
+      "msg": "Project is already finalized"
+    },
+    {
+      "code": 6015,
+      "name": "NotFinalized",
+      "msg": "Project is not finalized"
+    },
+    {
+      "code": 6016,
+      "name": "MemberMismatch",
+      "msg": "Member account list does not match project members"
+    },
+    {
+      "code": 6017,
+      "name": "DistributionEmpty",
+      "msg": "Nothing available to distribute"
+    },
+    {
+      "code": 6018,
+      "name": "CannotRemoveCreator",
+      "msg": "Cannot remove the project creator"
+    },
+    {
+      "code": 6019,
+      "name": "MemberNotFound",
+      "msg": "Member not found"
+    },
+    {
+      "code": 6020,
+      "name": "MemberAlreadyApproved",
+      "msg": "Cannot remove a member who already approved"
+    },
+    {
+      "code": 6021,
+      "name": "InvalidProtocolWallet",
+      "msg": "protocol_wallet must match the locked BuildPact protocol wallet"
+    },
+    {
+      "code": 6022,
+      "name": "VaultNotEmpty",
+      "msg": "A finalized project can only be closed once its vault is fully distributed"
+    }
+  ],
+  "types": [
+    {
+      "name": "DescriptionUpdated",
+      "docs": [
+        "Upgrade 27/08 — `new_len` est une longueur en OCTETS UTF-8, pas en",
+        "caractères. Un indexeur qui voudrait afficher un compteur doit en tenir",
+        "compte."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "project",
+            "type": "pubkey"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_len",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundsDistributed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "project",
+            "type": "pubkey"
+          },
+          {
+            "name": "fee_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "total_distributed_lamports",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Member",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "role",
+            "type": "string"
+          },
+          {
+            "name": "share_bps",
+            "type": "u16"
+          },
+          {
+            "name": "approved",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MemberAdded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "project",
+            "type": "pubkey"
+          },
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "share_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MemberApproved",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "project",
+            "type": "pubkey"
+          },
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MemberRemoved",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "project",
+            "type": "pubkey"
+          },
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Project",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "project_id",
+            "type": "string"
+          },
+          {
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "members",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "Member"
+                }
+              }
+            }
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "ProjectStatus"
+              }
+            }
+          },
+          {
+            "name": "protocol_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProjectClosed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "project",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProjectCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "project",
+            "type": "pubkey"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "title",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProjectFinalized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "project",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProjectFunded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "project",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount_lamports",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProjectStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Open"
+          },
+          {
+            "name": "Finalized"
+          }
+        ]
+      }
+    }
+  ]
+}
