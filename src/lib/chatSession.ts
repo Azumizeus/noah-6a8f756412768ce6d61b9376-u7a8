@@ -24,6 +24,7 @@
 // navigation et viderait la durée de 24 h de son sens.
 // ═══════════════════════════════════════════════════════════════════
 import { translate, type Lang } from './i18n/translations';
+import { readLang } from './i18n/langStorage';
 
 /**
  * ⚠️ Doit rester synchronisé avec SESSION_TTL_HOURS dans
@@ -46,13 +47,7 @@ const RENEW_MARGIN_MS = 5 * 60 * 1000;
 const STORAGE_PREFIX = 'buildpact_chat_session';
 
 function currentLang(): Lang {
-  try {
-    const stored = localStorage.getItem('buildpact_lang');
-    if (stored === 'fr' || stored === 'en') return stored;
-  } catch {
-    /* non bloquant */
-  }
-  return 'fr';
+  return readLang();
 }
 function tr(key: string, params?: Record<string, string | number>): string {
   return translate(currentLang(), key, params);

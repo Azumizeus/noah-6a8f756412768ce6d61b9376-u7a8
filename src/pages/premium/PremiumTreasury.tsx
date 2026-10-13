@@ -18,7 +18,7 @@ import '../../styles/premium.css';
 
 export default function PremiumTreasury() {
   const { t } = useLanguage();
-  const { totalValueLockedSol, distributedRecentSol, pendingClaimsSol, flows, loading, error } = useTreasury();
+  const { totalValueLockedSol, distributedRecentSol, pendingClaimsSol, flows, flowsVerified, loading, error } = useTreasury();
 
   return (
     <div className="p-page">
@@ -35,17 +35,17 @@ export default function PremiumTreasury() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 14, marginTop: 24 }}>
           <div className="p-stat hero">
             <p className="k">{t('treasury.statTvlLabel')}</p>
-            <p className="v">{totalValueLockedSol.toFixed(4)} <small>SOL</small></p>
+            <p className="v">{loading ? '…' : <>{totalValueLockedSol.toFixed(4)} <small>SOL</small></>}</p>
             <p className="s">{t('treasury.statTvlSublabel')}</p>
           </div>
           <div className="p-stat">
             <p className="k">{t('treasury.statDistributedLabel')}</p>
-            <p className="v">{distributedRecentSol.toFixed(4)} <small>SOL</small></p>
-            <p className="s">{t('treasury.statDistributedSublabel')}</p>
+            <p className="v">{loading || !flowsVerified ? '—' : <>{distributedRecentSol.toFixed(4)} <small>SOL</small></>}</p>
+            <p className="s">{!loading && !flowsVerified ? t('treasury.unverifiedFlows') : t('treasury.statDistributedSublabel')}</p>
           </div>
           <div className="p-stat">
             <p className="k">{t('treasury.statPendingLabel')}</p>
-            <p className="v">{pendingClaimsSol.toFixed(4)} <small>SOL</small></p>
+            <p className="v">{loading ? '…' : <>{pendingClaimsSol.toFixed(4)} <small>SOL</small></>}</p>
             <p className="s">{t('treasury.statPendingSublabel')}</p>
           </div>
         </div>
@@ -86,7 +86,7 @@ export default function PremiumTreasury() {
           <div style={{ height: 190, background: 'var(--p-canvas)', border: '1px solid var(--p-line)', borderRadius: 'var(--p-radius-lg)' }} aria-hidden="true" />
         ) : flows.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '42px 24px', background: 'var(--p-canvas)', border: '1px solid var(--p-line)', borderRadius: 'var(--p-radius-lg)' }}>
-            <p style={{ fontSize: 13, color: 'var(--p-ink3)' }}>{t('treasury.emptyFlows')}</p>
+            <p style={{ fontSize: 13, color: 'var(--p-ink2)' }}>{flowsVerified ? t('treasury.emptyFlows') : t('treasury.unverifiedFlows')}</p>
           </div>
         ) : (
           <div style={{ background: 'var(--p-canvas)', border: '1px solid var(--p-line)', borderRadius: 'var(--p-radius-lg)', overflow: 'hidden', boxShadow: 'var(--p-shadow)' }}>

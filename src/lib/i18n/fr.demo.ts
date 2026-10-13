@@ -8,6 +8,8 @@
 import type { Dict } from './types';
 
 export const frDemo: Dict = {
+  projectTitle: 'Atlas — carte solaire pour les lycées',
+  projectPitch: 'Atlas équipe les lycées d’un tableau de bord énergétique, ouvert et vérifiable.',
   eyebrow: 'Rejeu scripté',
   title: 'Le parcours complet, sans wallet',
   subtitle:

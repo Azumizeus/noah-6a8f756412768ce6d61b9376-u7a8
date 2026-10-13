@@ -94,8 +94,8 @@ export default function PremiumNetwork() {
   }, [hydrate]);
 
   useEffect(() => {
-    document.title = 'BuildPact — Réseau (v2)';
-  }, []);
+    document.title = t('network.eyebrow') + ' — BuildPact';
+  }, [t]);
 
   async function loadMore() {
     if (!posts || posts.length === 0 || loadingMore) return;
@@ -141,10 +141,10 @@ export default function PremiumNetwork() {
           {t('network.subtitle')}
         </p>
 
-        {/* Composeur — composant legacy réutilisé tel quel */}
-        <div style={{ marginTop: 22 }}>
+        {/* Composeur et cartes : habillage legacy (text-white, text-ink-*).
+            La peau les réécrit pour le fond clair ET le mode sombre. */}
+        <div className="p-legacy-skin" style={{ marginTop: 22, display: 'grid', gap: 14 }}>
           <PostComposer myWallet={myWallet} signMessage={signMessage} onPosted={handlePosted} />
-        </div>
 
         {posts === null ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 18 }}>
@@ -207,6 +207,7 @@ export default function PremiumNetwork() {
             )}
           </>
         )}
+        </div>
       </div>
     </div>
   );

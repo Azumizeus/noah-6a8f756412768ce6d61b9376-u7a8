@@ -62,17 +62,17 @@ export default function PremiumPacts() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))', gap: 14, marginTop: 20 }}>
           <div className="p-stat hero">
             <p className="k">{t('v2.pacts.statVaults')}</p>
-            <p className="v">{totalVault.toFixed(4)} <small>SOL</small></p>
-            <p className="s">{t('v2.pacts.statVaultsSub', { n: pacts.length })}</p>
+            <p className="v">{loading ? '…' : <>{totalVault.toFixed(4)} <small>SOL</small></>}</p>
+            <p className="s">{loading ? t('v2.dashboard.loadingRegistry') : t('v2.pacts.statVaultsSub', { n: pacts.length })}</p>
           </div>
           <div className="p-stat">
             <p className="k">{t('v2.pacts.statOpen')}</p>
-            <p className="v">{pacts.filter((p) => p.status !== 'active').length}</p>
+            <p className="v">{loading ? '…' : pacts.filter((p) => p.status !== 'active').length}</p>
             <p className="s">{t('v2.pacts.statOpenSub')}</p>
           </div>
           <div className="p-stat">
             <p className="k">{t('v2.pacts.statFinalized')}</p>
-            <p className="v">{pacts.filter((p) => p.status === 'active').length}</p>
+            <p className="v">{loading ? '…' : pacts.filter((p) => p.status === 'active').length}</p>
             <p className="s">{t('v2.pacts.statFinalizedSub')}</p>
           </div>
         </div>

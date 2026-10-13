@@ -1,73 +1,18 @@
 // src/lib/router.ts
 import { useEffect, useState } from 'react';
+import { classifyHash, type AppRoute } from './hashRoute';
 
 // Routes principales = premium v2. Legacy accessible sous /v1/*.
-export type Route =
-  | '/'
-  | '/pacts'
-  | '/marketplace'
-  | '/treasury'
-  | '/docs'
-  | '/about'
-  | '/profile'
-  | '/home'
-  | '/builders'
-  | '/network'
-  | '/create'
-  | '/demo'
-  | '/v1'
-  | '/v1/pacts'
-  | '/v1/marketplace'
-  | '/v1/treasury'
-  | '/v1/docs'
-  | '/v1/about'
-  | '/v1/profile'
-  | '/v1/builders'
-  | '/v1/network'
-  | '/v1/create';
-
-// ⚠️ Toute route absente de VALID retombe silencieusement sur '/' — pas de
-// 404, pas d'avertissement. Ajouter une entrée au type sans l'ajouter ici
-// donne un lien qui « ne fait rien » et se debug très mal.
-const VALID: Route[] = [
-  // Premium v2 (défaut)
-  '/', '/pacts', '/marketplace', '/treasury', '/docs', '/about', '/profile',
-  '/home', '/builders', '/network', '/create',
-  // Rejeu scripté sans wallet (vidéo de démo / vitrine juges).
-  '/demo',
-  // Legacy v1
-  '/v1', '/v1/pacts', '/v1/marketplace', '/v1/treasury', '/v1/docs',
-  '/v1/about', '/v1/profile', '/v1/builders', '/v1/network', '/v1/create',
-];
-
-// Redirections v2 → nouvelles routes : les anciens bookmarks et liens
-// partagés (#/v2, #/v2/pacts, …) restent valides.
-const V2_REDIRECTS: Record<string, string> = {
-  '/v2': '/',
-  '/v2/pacts': '/pacts',
-  '/v2/marketplace': '/marketplace',
-  '/v2/treasury': '/treasury',
-  '/v2/docs': '/docs',
-  '/v2/about': '/about',
-  '/v2/profile': '/profile',
-  '/v2/builders': '/builders',
-  '/v2/network': '/network',
-};
+// Le classement (valide / 404 / redirection /v2) vit dans hashRoute.ts,
+// testable sans window. Ce fichier ne fait que le brancher sur le hash.
+export type Route = AppRoute;
 
 function readHash(): Route {
-  const raw = window.location.hash.replace(/^#/, '');
-  // Route dynamique #/pact/<pda> — gérée séparément par usePactPdaParam(),
-  // on la laisse passer telle quelle pour ne pas la faire retomber sur '/'.
-  if (raw.startsWith('/pact/') || raw.startsWith('/v1/pact/') || raw.startsWith('/v2/pact/')) return raw as Route;
-  // Une route peut porter un ?paramètre (ex: /pacts?mine=1) — on compare
-  // uniquement le chemin, le paramètre est lu séparément (voir usePactsMineParam).
-  const path = raw.split('?')[0];
-  // Redirect v2 → nouvelle route
-  if (V2_REDIRECTS[path]) {
-    window.location.hash = '#' + V2_REDIRECTS[path];
-    return V2_REDIRECTS[path] as Route;
+  const classified = classifyHash(window.location.hash);
+  if (classified.redirectTo && window.location.hash.replace(/^#/, '').split('?')[0] !== classified.redirectTo) {
+    window.location.hash = '#' + classified.redirectTo;
   }
-  return (VALID as string[]).includes(path) ? (path as Route) : '/';
+  return classified.route;
 }
 
 export function useHashRoute(): Route {
@@ -82,15 +27,8 @@ export function useHashRoute(): Route {
   return route;
 }
 
-// Format base58 Solana (32-44 caractères, alphabet sans 0/O/I/l), avec un
-// éventuel suffixe ?doc=<id> pour lier directement vers un document du vault
-// (voir useVaultDocParam ci-dessous et VaultPanel.tsx).
-const PDA_RE = /^(?:\/v[12])?\/pact\/([1-9A-HJ-NP-Za-km-z]{32,44})(?:\?.*)?$/;
-
 function extractPactPda(): string | null {
-  const raw = window.location.hash.replace(/^#/, '');
-  const m = raw.match(PDA_RE);
-  return m ? m[1] : null;
+  return classifyHash(window.location.hash).pactPda;
 }
 
 /** Extrait ?doc=<id> du hash courant (#/pact/<pda>?doc=42) — null si absent/invalide. */

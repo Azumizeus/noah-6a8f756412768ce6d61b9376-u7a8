@@ -3,6 +3,8 @@
 import type { Dict } from './types';
 
 export const enDemo: Dict = {
+  projectTitle: 'Atlas — a solar dashboard for schools',
+  projectPitch: 'Atlas gives schools an open, verifiable energy dashboard.',
   eyebrow: 'Scripted replay',
   title: 'The full journey, no wallet required',
   subtitle:

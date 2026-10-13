@@ -61,17 +61,17 @@ export default function PremiumDashboard() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 14, marginTop: 20 }}>
           <div className="p-stat hero">
             <p className="k">{t('v2.dashboard.statFunds')}</p>
-            <p className="v">{vaultTotal.toFixed(4)} <small>SOL</small></p>
-            <p className="s">{t('v2.dashboard.statFundsSub', { n: pacts.length })}</p>
+            <p className="v">{loading ? '…' : <>{vaultTotal.toFixed(4)} <small>SOL</small></>}</p>
+            <p className="s">{loading ? t('v2.dashboard.loadingRegistry') : t('v2.dashboard.statFundsSub', { n: pacts.length })}</p>
           </div>
           <div className="p-stat">
             <p className="k">{t('v2.dashboard.statRecruiting')}</p>
-            <p className="v">{recruiting.length}</p>
+            <p className="v">{loading ? '…' : recruiting.length}</p>
             <p className="s">{t('v2.dashboard.statRecruitingSub')}</p>
           </div>
           <div className="p-stat">
             <p className="k">{t('v2.dashboard.statFunding')}</p>
-            <p className="v">{funding.length}</p>
+            <p className="v">{loading ? '…' : funding.length}</p>
             <p className="s">{t('v2.dashboard.statFundingSub')}</p>
           </div>
         </div>
@@ -85,7 +85,7 @@ export default function PremiumDashboard() {
         {/* Barre de contrôles : 4 vues */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', margin: '34px 0 14px' }}>
           <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--p-ink)' }}>
-            {t('v2.dashboard.registryCount', { n: pacts.length })}
+            {loading ? t('v2.dashboard.loadingRegistry') : t('v2.dashboard.registryCount', { n: pacts.length })}
           </h2>
           <ViewToggle
             view={view}
@@ -191,8 +191,8 @@ export default function PremiumDashboard() {
         </div>
 
         {!loading && pacts.length === 0 && (
-          <p style={{ textAlign: 'center', color: 'var(--p-ink3)', fontSize: 13.5, marginTop: 40 }}>
-            Aucun pact pour l'instant.
+          <p style={{ textAlign: 'center', color: 'var(--p-ink2)', fontSize: 13.5, marginTop: 40 }}>
+            {t('v2.dashboard.emptyRegistry')}
           </p>
         )}
         {publicKey && (
@@ -204,15 +204,16 @@ export default function PremiumDashboard() {
 }
 
 function PaginationShell({ paged, setPage }: { paged: ReturnType<typeof usePagedSlice>; setPage: (p: number) => void }) {
+  const { t } = useLanguage();
   if (paged.pageCount <= 1) return null;
   return (
-    <nav aria-label="Pagination" style={{ display: 'flex', gap: 5, justifyContent: 'center', alignItems: 'center' }}>
+    <nav aria-label={t('common.paginationAria')} style={{ display: 'flex', gap: 5, justifyContent: 'center', alignItems: 'center' }}>
       <PagerBtn disabled={paged.page <= 1} onClick={() => setPage(paged.page - 1)}>‹</PagerBtn>
       {Array.from({ length: paged.pageCount }, (_, i) => i + 1).map((n) => (
         <PagerBtn key={n} active={n === paged.page} onClick={() => setPage(n)}>{n}</PagerBtn>
       ))}
       <PagerBtn disabled={paged.page >= paged.pageCount} onClick={() => setPage(paged.page + 1)}>›</PagerBtn>
-      <span style={{ marginLeft: 8, fontFamily: 'monospace', fontSize: 11, color: 'var(--p-ink3)' }}>p. {paged.page}/{paged.pageCount}</span>
+      <span style={{ marginLeft: 8, fontFamily: 'monospace', fontSize: 11, color: 'var(--p-ink3)' }}>{t('common.pageOf', { p: paged.page, n: paged.pageCount })}</span>
     </nav>
   );
 }

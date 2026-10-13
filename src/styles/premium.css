@@ -676,3 +676,132 @@
    que fait .p-btn.primary du shell premium. */
 .p-legacy-skin .bg-accent-violet.text-ink-900,
 .p-legacy-skin .bg-accent-neon.text-ink-900 { color: #fff; }
+
+/* ── Navigation, badge bêta, lien d'évitement ─────────────────────────
+   Le menu est une rangée sur grand écran et un panneau sous le logo
+   en dessous de 860 px. Le badge rappelle que l'app est sur devnet,
+   en bêta : il ne doit pas pouvoir être pris pour un produit mainnet. */
+
+.p-shell-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 26px;
+  position: relative;
+}
+.p-shell-links {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.p-beta {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--p-warn);
+  background: var(--p-warn-soft);
+  border: 1px solid color-mix(in srgb, var(--p-warn) 40%, var(--p-line));
+  border-radius: 99px;
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+.p-nav-toggle {
+  display: none;
+  margin-left: auto;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 99px;
+  border: 1px solid var(--p-line);
+  background: var(--p-canvas);
+  color: var(--p-ink);
+  font: 650 12.5px/1 'Inter', sans-serif;
+  cursor: pointer;
+}
+.p-skip {
+  position: absolute;
+  left: 12px;
+  top: 8px;
+  z-index: 60;
+  transform: translateY(-180%);
+  background: var(--p-ink);
+  color: var(--p-canvas);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 650;
+  text-decoration: none;
+}
+.p-skip:focus {
+  transform: none;
+}
+.p-page :focus-visible {
+  outline: 2px solid var(--p-accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 860px) {
+  .p-nav-toggle { display: inline-flex; align-items: center; }
+  .p-shell-links {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    z-index: 40;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    padding: 10px;
+    background: var(--p-canvas);
+    border: 1px solid var(--p-line);
+    border-radius: var(--p-radius-lg);
+    box-shadow: var(--p-shadow);
+  }
+  .p-shell-links[data-open='true'] { display: flex; }
+  .p-shell-links > button {
+    justify-content: flex-start;
+    width: 100%;
+  }
+}
+
+/* ── Contraste des composants legacy posés sur le shell clair ────────
+   `text-white` suit --text-primary-rgb (encre premium dans la peau).
+   Les aplats `bg-black/*` restent du noir Tailwind littéral : sur un
+   panneau clair ils deviennent un gris moyen, et l'encre remappée
+   n'y est plus lisible. On les aligne sur le panneau premium.
+   L'exception `bg-black/70` (pastille de suppression) reste sombre,
+   avec une encre claire. */
+
+.p-legacy-skin {
+  color: var(--p-ink);
+}
+.p-legacy-skin .text-white,
+.p-legacy-skin h1,
+.p-legacy-skin h2,
+.p-legacy-skin h3,
+.p-legacy-skin h4 {
+  color: var(--p-ink);
+}
+.p-legacy-skin .bg-black\/20,
+.p-legacy-skin .bg-black\/30,
+.p-legacy-skin .bg-black\/40,
+.p-legacy-skin .bg-black\/50 {
+  background-color: var(--p-bg);
+}
+.p-legacy-skin .bg-black\/70,
+.p-legacy-skin .bg-black\/70.text-white {
+  background-color: var(--p-ink);
+  color: var(--p-canvas);
+}
+.p-legacy-skin input::placeholder,
+.p-legacy-skin textarea::placeholder {
+  color: var(--p-ink3);
+  opacity: 1;
+}

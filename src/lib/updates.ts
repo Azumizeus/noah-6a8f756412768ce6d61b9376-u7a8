@@ -13,6 +13,7 @@
 // ═══════════════════════════════════════════════════════════════════
 import { supabase, isRemoteEnabled } from './supabaseClient';
 import { translate, type Lang } from './i18n/translations';
+import { readLang } from './i18n/langStorage';
 import {
   buildUpdateSignMessage,
   callProjectWrite,
@@ -23,13 +24,7 @@ import {
 export { isRemoteEnabled as updatesEnabled };
 
 function currentLang(): Lang {
-  try {
-    const stored = localStorage.getItem('buildpact_lang');
-    if (stored === 'fr' || stored === 'en') return stored;
-  } catch {
-    /* non bloquant */
-  }
-  return 'fr';
+  return readLang();
 }
 function tr(key: string, params?: Record<string, string | number>): string {
   return translate(currentLang(), key, params);
