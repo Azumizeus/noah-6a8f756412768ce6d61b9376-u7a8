@@ -117,3 +117,9 @@ docs/RAPPORT-*.md
 # ─────────────────────────────────────────────────────────────────────────
 graphify-out/
 StudyVault/
+
+# Montage video local (captures + MP4, regenerables)
+output/
+
+# Cle Bearer OmniRoute locale (jamais committee)
+.omniroute_key
