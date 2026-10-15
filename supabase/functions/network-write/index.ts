@@ -95,23 +95,55 @@ function extFromMime(mimeType: string): string {
   return fromType === 'jpeg' ? 'jpg' : fromType || 'png';
 }
 
-/** Compte les lignes récentes d'un wallet dans une table donnée. */
+/** Compte les lignes récentes d'un wallet dans une table donnée.
+ *  Renvoie null si le comptage échoue : l'appelant refuse alors (échec
+ *  FERMÉ), au lieu de traiter une panne comme « 0 message récent ». */
 async function recentCount(
   admin: ReturnType<typeof createClient>,
   table: 'network_posts' | 'network_post_comments',
   wallet: string
-): Promise<number> {
+): Promise<number | null> {
   const since = new Date(Date.now() - RATE_WINDOW_MS).toISOString();
   const { count, error } = await admin
     .from(table)
     .select('id', { count: 'exact', head: true })
     .eq('author_wallet', wallet)
     .gte('created_at', since);
-  if (error) return 0;
+  if (error) return null;
   return count ?? 0;
 }
 
-Deno.serve(async (req: Request) => {
+// ─────────────────────────────────────────────────────────────────────
+// CORS restreint (15/10/2026). `*` laissait n'importe quel site appeler
+// cette fonction depuis le navigateur d'un visiteur. Désormais seule une
+// origine de la liste est répercutée ; les autres reçoivent une réponse
+// SANS en-tête Access-Control-Allow-Origin (le navigateur la bloque).
+// Surcharge possible sans redéployer le code :
+//   supabase secrets set ALLOWED_ORIGINS="https://a.example,https://b.example"
+// Les appels hors navigateur (curl, serveur) ne sont pas concernés : le
+// CORS protège le navigateur, pas l'API — l'auth reste la signature.
+// ─────────────────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = (
+  Deno.env.get('ALLOWED_ORIGINS') ??
+  'https://buildpact-solana.vercel.app,http://localhost:5173,http://localhost:4173,http://127.0.0.1:5173'
+)
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+function withCors(req: Request, res: Response): Response {
+  const origin = req.headers.get('Origin');
+  const headers = new Headers(res.headers);
+  headers.set('Vary', 'Origin');
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    headers.set('Access-Control-Allow-Origin', origin);
+  } else {
+    headers.delete('Access-Control-Allow-Origin');
+  }
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+}
+
+async function handle(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS_HEADERS });
   if (req.method !== 'POST') return jsonResponse({ error: 'Méthode non supportée.' }, 405);
 
@@ -154,7 +186,11 @@ Deno.serve(async (req: Request) => {
       return jsonResponse({ error: 'Projet lié invalide.' }, 400);
     }
 
-    if ((await recentCount(admin, 'network_posts', wallet)) >= MAX_POSTS_PER_WINDOW) {
+    const recentPosts = await recentCount(admin, 'network_posts', wallet);
+    if (recentPosts === null) {
+      return jsonResponse({ error: 'Vérification du débit indisponible — réessaie.' }, 503);
+    }
+    if (recentPosts >= MAX_POSTS_PER_WINDOW) {
       return jsonResponse({ error: 'Trop de publications — attends une minute.' }, 429);
     }
 
@@ -234,7 +270,11 @@ Deno.serve(async (req: Request) => {
       .maybeSingle();
     if (!post) return jsonResponse({ error: 'Publication introuvable.' }, 404);
 
-    if ((await recentCount(admin, 'network_post_comments', wallet)) >= MAX_COMMENTS_PER_WINDOW) {
+    const recentComments = await recentCount(admin, 'network_post_comments', wallet);
+    if (recentComments === null) {
+      return jsonResponse({ error: 'Vérification du débit indisponible — réessaie.' }, 503);
+    }
+    if (recentComments >= MAX_COMMENTS_PER_WINDOW) {
       return jsonResponse({ error: 'Trop de commentaires — attends une minute.' }, 429);
     }
 
@@ -307,4 +347,6 @@ Deno.serve(async (req: Request) => {
   }
 
   return jsonResponse({ error: 'Action inconnue.' }, 400);
-});
+}
+
+Deno.serve(async (req: Request) => withCors(req, await handle(req)));

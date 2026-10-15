@@ -68,7 +68,37 @@ async function sha256Hex(text: string): Promise<string> {
 // si d'autres langues sont ajoutées à l'app un jour.
 const LANG_TO_DEEPL: Record<string, string> = { fr: 'FR', en: 'EN-US' };
 
-Deno.serve(async (req: Request) => {
+// ─────────────────────────────────────────────────────────────────────
+// CORS restreint (15/10/2026). `*` laissait n'importe quel site appeler
+// cette fonction depuis le navigateur d'un visiteur. Désormais seule une
+// origine de la liste est répercutée ; les autres reçoivent une réponse
+// SANS en-tête Access-Control-Allow-Origin (le navigateur la bloque).
+// Surcharge possible sans redéployer le code :
+//   supabase secrets set ALLOWED_ORIGINS="https://a.example,https://b.example"
+// Les appels hors navigateur (curl, serveur) ne sont pas concernés : le
+// CORS protège le navigateur, pas l'API — l'auth reste la signature.
+// ─────────────────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = (
+  Deno.env.get('ALLOWED_ORIGINS') ??
+  'https://buildpact-solana.vercel.app,http://localhost:5173,http://localhost:4173,http://127.0.0.1:5173'
+)
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+function withCors(req: Request, res: Response): Response {
+  const origin = req.headers.get('Origin');
+  const headers = new Headers(res.headers);
+  headers.set('Vary', 'Origin');
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    headers.set('Access-Control-Allow-Origin', origin);
+  } else {
+    headers.delete('Access-Control-Allow-Origin');
+  }
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+}
+
+async function handle(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 
@@ -110,12 +140,20 @@ Deno.serve(async (req: Request) => {
     'unknown';
   const today = new Date().toISOString().slice(0, 10);
 
-  const { data: usage } = await supabase
+  const { data: usage, error: usageErr } = await supabase
     .from('translation_usage')
     .select('chars_used')
     .eq('usage_key', usageKey)
     .eq('usage_day', today)
     .maybeSingle();
+
+  // Échec FERMÉ (15/10/2026) : si le compteur est illisible, on refuse au
+  // lieu de laisser passer — sinon une panne SQL ouvrirait un robinet DeepL
+  // illimité sur la clé partagée de toute l'app.
+  if (usageErr) {
+    console.error('[translate] quota read error:', usageErr.message);
+    return json({ error: 'Vérification du quota indisponible — réessaie.' }, 503);
+  }
 
   if ((usage?.chars_used ?? 0) + text.length > DAILY_CHAR_LIMIT) {
     return json(
@@ -210,4 +248,6 @@ Deno.serve(async (req: Request) => {
     });
 
   return json({ translatedText, detectedSourceLang, cached: false });
-});
+}
+
+Deno.serve(async (req: Request) => withCors(req, await handle(req)));

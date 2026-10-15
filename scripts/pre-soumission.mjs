@@ -348,9 +348,9 @@ async function sonder(url, method, params) {
 }
 
 /**
- * Origine annoncée au pré-vol. Le relais autorise `*` : la valeur exacte
- * n'a pas d'importance, seulement d'être une origine bien formée — ce que
- * `fetch` en Node envoie pour simuler un vrai onglet.
+ * Origine annoncée au pré-vol. Depuis le 15/10/2026 le relais ne répercute
+ * QUE les origines de sa liste blanche (plus de `*`) : cette valeur doit donc
+ * rester l'origine de la prod, sinon la sonde échouerait à juste titre.
  */
 export const ORIGINE_PREVOL = 'https://buildpact-solana.vercel.app';
 

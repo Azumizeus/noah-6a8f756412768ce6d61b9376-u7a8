@@ -117,7 +117,37 @@ function sanitizeRoles(input: unknown): string[] {
   return out;
 }
 
-Deno.serve(async (req: Request) => {
+// ─────────────────────────────────────────────────────────────────────
+// CORS restreint (15/10/2026). `*` laissait n'importe quel site appeler
+// cette fonction depuis le navigateur d'un visiteur. Désormais seule une
+// origine de la liste est répercutée ; les autres reçoivent une réponse
+// SANS en-tête Access-Control-Allow-Origin (le navigateur la bloque).
+// Surcharge possible sans redéployer le code :
+//   supabase secrets set ALLOWED_ORIGINS="https://a.example,https://b.example"
+// Les appels hors navigateur (curl, serveur) ne sont pas concernés : le
+// CORS protège le navigateur, pas l'API — l'auth reste la signature.
+// ─────────────────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = (
+  Deno.env.get('ALLOWED_ORIGINS') ??
+  'https://buildpact-solana.vercel.app,http://localhost:5173,http://localhost:4173,http://127.0.0.1:5173'
+)
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+function withCors(req: Request, res: Response): Response {
+  const origin = req.headers.get('Origin');
+  const headers = new Headers(res.headers);
+  headers.set('Vary', 'Origin');
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    headers.set('Access-Control-Allow-Origin', origin);
+  } else {
+    headers.delete('Access-Control-Allow-Origin');
+  }
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+}
+
+async function handle(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS_HEADERS });
   if (req.method !== 'POST') return jsonResponse({ error: 'Méthode non supportée.' }, 405);
 
@@ -187,4 +217,6 @@ Deno.serve(async (req: Request) => {
   }
 
   return jsonResponse({ ok: true, count: roles.length });
-});
+}
+
+Deno.serve(async (req: Request) => withCors(req, await handle(req)));

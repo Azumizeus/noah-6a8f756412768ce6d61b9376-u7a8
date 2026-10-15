@@ -99,10 +99,12 @@ after(() => {
 });
 
 /** Requête JSON-RPC telle que `@solana/web3.js` l'envoie. */
-function requete(corps: unknown, method = 'POST'): Request {
+const ORIGINE_APP = 'https://buildpact-solana.vercel.app';
+
+function requete(corps: unknown, method = 'POST', origine: string | null = ORIGINE_APP): Request {
   return new Request('https://exemple.supabase.co/functions/v1/rpc', {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(origine ? { Origin: origine } : {}) },
     ...(method === 'POST' ? { body: JSON.stringify(corps) } : {}),
   });
 }
@@ -286,7 +288,8 @@ test('un JSON illisible rend -32700, pas une exception', async () => {
 test('OPTIONS répond le pré-vol CORS, et un GET est refusé', async () => {
   const prevol = await relaisAvecSecret(requete(null, 'OPTIONS'));
   assert.equal(prevol.status, 200);
-  assert.equal(prevol.headers.get('access-control-allow-origin'), '*');
+  // 15/10/2026 : plus de `*` — l'origine de l'app est répercutée, pas un joker.
+  assert.equal(prevol.headers.get('access-control-allow-origin'), ORIGINE_APP);
   assert.match(prevol.headers.get('access-control-expose-headers') ?? '', /x-buildpact-relais/);
 
   // ⚠️ Régression du 12/10/2026, trouvée dans le NAVIGATEUR après un
@@ -318,6 +321,26 @@ test('une réponse normale porte AUSSI les en-têtes CORS', async () => {
   reponsesAmont = [OK_AMONT];
   const reponse = await relaisAvecSecret(requete({ jsonrpc: '2.0', id: 1, method: 'getVersion' }));
   assert.equal(reponse.status, 200);
-  assert.equal(reponse.headers.get('access-control-allow-origin'), '*');
+  assert.equal(reponse.headers.get('access-control-allow-origin'), ORIGINE_APP);
   assert.equal(reponse.headers.get('x-buildpact-relais'), 'dedie');
+});
+
+test("CORS restreint : une origine étrangère ou absente ne reçoit AUCUN Allow-Origin", async () => {
+  // 15/10/2026 — `*` laissait n'importe quel site lire le relais depuis le
+  // navigateur d'un visiteur. Le joker ne doit jamais revenir.
+  for (const origine of ['https://site-malveillant.example', 'http://localhost:9999', null]) {
+    reponsesAmont = [OK_AMONT];
+    const pre = await relaisAvecSecret(requete(null, 'OPTIONS', origine));
+    assert.equal(pre.headers.get('access-control-allow-origin'), null, `pré-vol, origine ${origine}`);
+    reponsesAmont = [OK_AMONT];
+    const rep = await relaisAvecSecret(
+      requete({ jsonrpc: '2.0', id: 1, method: 'getVersion' }, 'POST', origine)
+    );
+    assert.equal(rep.headers.get('access-control-allow-origin'), null, `réponse, origine ${origine}`);
+    assert.notEqual(rep.headers.get('access-control-allow-origin'), '*');
+  }
+  // L'origine de dev local reste autorisée.
+  const dev = await relaisAvecSecret(requete(null, 'OPTIONS', 'http://localhost:5173'));
+  assert.equal(dev.headers.get('access-control-allow-origin'), 'http://localhost:5173');
+  assert.equal(dev.headers.get('vary'), 'Origin');
 });

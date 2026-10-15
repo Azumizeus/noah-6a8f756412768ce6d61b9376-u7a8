@@ -137,7 +137,37 @@ async function fetchRevocationCutoff(
   return new Date(data.revoked_before as string).getTime();
 }
 
-Deno.serve(async (req: Request) => {
+// ─────────────────────────────────────────────────────────────────────
+// CORS restreint (15/10/2026). `*` laissait n'importe quel site appeler
+// cette fonction depuis le navigateur d'un visiteur. Désormais seule une
+// origine de la liste est répercutée ; les autres reçoivent une réponse
+// SANS en-tête Access-Control-Allow-Origin (le navigateur la bloque).
+// Surcharge possible sans redéployer le code :
+//   supabase secrets set ALLOWED_ORIGINS="https://a.example,https://b.example"
+// Les appels hors navigateur (curl, serveur) ne sont pas concernés : le
+// CORS protège le navigateur, pas l'API — l'auth reste la signature.
+// ─────────────────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = (
+  Deno.env.get('ALLOWED_ORIGINS') ??
+  'https://buildpact-solana.vercel.app,http://localhost:5173,http://localhost:4173,http://127.0.0.1:5173'
+)
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+function withCors(req: Request, res: Response): Response {
+  const origin = req.headers.get('Origin');
+  const headers = new Headers(res.headers);
+  headers.set('Vary', 'Origin');
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    headers.set('Access-Control-Allow-Origin', origin);
+  } else {
+    headers.delete('Access-Control-Allow-Origin');
+  }
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+}
+
+async function handle(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS_HEADERS });
   if (req.method !== 'POST') return jsonResponse({ error: 'Méthode non supportée.' }, 405);
 
@@ -282,7 +312,14 @@ Deno.serve(async (req: Request) => {
       .eq('author_wallet', authorWallet)
       .gte('created_at', since);
 
-    if (!countError && (count ?? 0) >= RATE_LIMIT_MAX_MESSAGES) {
+    // Échec FERMÉ : si le comptage échoue, on refuse (503) au lieu de
+    // laisser passer — un limiteur qui cède à la première panne SQL ne
+    // limite plus rien au moment précis où la base est sous charge.
+    if (countError) {
+      console.error('[chat-moderate] rate-limit count error:', countError.message);
+      return jsonResponse({ error: 'Vérification du débit indisponible — réessaie.' }, 503);
+    }
+    if ((count ?? 0) >= RATE_LIMIT_MAX_MESSAGES) {
       return jsonResponse({ error: 'Trop de messages envoyés — attends une minute.' }, 429);
     }
 
@@ -359,4 +396,6 @@ Deno.serve(async (req: Request) => {
   }
 
   return jsonResponse({ ok: true });
-});
+}
+
+Deno.serve(async (req: Request) => withCors(req, await handle(req)));
