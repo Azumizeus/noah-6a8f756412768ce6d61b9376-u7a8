@@ -1,5 +1,10 @@
 # Check-up galères Noah + GitHub — 13/10/2026
 
+> **Mise à jour 15/10/2026 — ce qui suit est le journal du 13/10, conservé tel quel.**
+> Dépôt canonique actuel : `Azumizeus/noah-6a8f756412768ce6d61b9376-u7a8` (public, branché sur Vercel, prod = `c0cadb2`).
+> Les dépôts `kvqd`, `043v`, `BuildPact` et `buildpact` ne sont plus joignables publiquement.
+> Le Program ID correct est `9quyDwntXDBhNhTmrfCf7xEXVFaxYMB83BwPEUeqVoUJ` (voir l'erratum en bas).
+
 ## Où on en est (le principal)
 - Repo à envoyer au hackathon : `Azumizeus/noah-6acd96d8d87497d0afff880c-kvqd`
   - État GitHub vérifié : `main = def8726`, arbre `e64f7ef`, 1 seul commit
@@ -56,3 +61,6 @@
 - Ne plus lui envoyer de captures GitHub comme consigne de code.
 
 *Fichier généré le 13/10/2026. Aucune valeur secrète dedans (empreintes seules).*
+
+## Erratum 15/10/2026
+- Le Program ID était mal recopié dans la section « À faire pour l'envoi hackathon » (`…XD8bhNtArFcF7xEXVFaXYMB83wPEuEqVOUj`). Valeur correcte : `9quyDwntXDBhNhTmrfCf7xEXVFaxYMB83BwPEUeqVoUJ`, celle de `Anchor.toml` et du README.

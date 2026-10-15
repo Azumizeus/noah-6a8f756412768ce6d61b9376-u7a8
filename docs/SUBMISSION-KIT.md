@@ -1,12 +1,13 @@
 # BuildPact — Kit soumission hackathon (réutilisable)
 
-Date kit : 13/10/2026 — commit `def8726` / arbre `e64f7ef` — 1 commit, zéro `.env`.
+Date kit : 13/10/2026, mis à jour le 15/10/2026 — dépôt canonique `u7a8`, prod = commit `c0cadb2`, zéro `.env`.
 
 ## 1. Liens à coller
 
-- Repo : `https://github.com/Azumizeus/noah-6acd96d8d87497d0afff880c-kvqd`
-  - Doit être **Public** : `Settings → General → Danger Zone → Change visibility → Public`
-  - Vérifié : 1 commit `buildpact: snapshot propre e64f7ef`, pas de `.env`, historique `.env` vide.
+- Repo : `https://github.com/Azumizeus/noah-6a8f756412768ce6d61b9376-u7a8`
+  - **Public** (vérifié le 15/10), branche `main`, branché sur Vercel (projet `noah-6a8f…-u7a8`, déploiement auto).
+  - Les anciens liens `…-kvqd`, `Azumizeus/BuildPact` et `Azumizeus/buildpact` renvoient un 404 hors connexion : ne pas les donner au jury.
+  - Snapshot propre d'origine : `def8726` (arbre `e64f7ef`) ; pas de `.env`, historique `.env` vide.
   - About → Description : `On-chain cap table + escrow for Solana builders`
   - Topics : `solana`, `anchor`, `devnet`, `escrow`, `web3`
 - Demo live : `https://buildpact-solana.vercel.app/`
@@ -34,9 +35,9 @@ Date kit : 13/10/2026 — commit `def8726` / arbre `e64f7ef` — 1 commit, zéro
 
 ## 4. Checklist avant Envoi
 
-- [ ] Repo en Public (sinon 404 jury)
+- [x] Repo `u7a8` en Public (vérifié le 15/10)
 - [ ] README affiche Live demo + Program ID + flow
-- [ ] Vercel Deploy `Ready` sur `def8726`
+- [x] Vercel Deploy `Ready` sur `c0cadb2` (vérifié le 15/10)
 - [ ] `/demo` charge sans wallet (8 étapes create → distribute)
 - [ ] Vidéo 2 min en non répertoriée (voir `VIDEO-SCRIPT-2MIN.md`)
 - [ ] Ne jamais remettre `VITE_RPC_ENDPOINT` / clé Helius en env Vercel
