@@ -160,6 +160,20 @@ function withCors(req: Request, res: Response): Response {
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
 }
 
+const RATE_MAX = 20;
+const rateCounters = new Map<string, { n: number; expire: number }>();
+function rateExceeded(wallet: string): boolean {
+  const now = Date.now();
+  const c = rateCounters.get(wallet);
+  if (!c || c.expire <= now) {
+    if (rateCounters.size > 5000) rateCounters.clear();
+    rateCounters.set(wallet, { n: 1, expire: now + 60_000 });
+    return false;
+  }
+  c.n += 1;
+  return c.n > RATE_MAX;
+}
+
 async function handle(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: CORS_HEADERS });
@@ -219,6 +233,14 @@ async function handle(req: Request): Promise<Response> {
     return jsonResponse({ error: 'Configuration serveur manquante (SUPABASE_URL / SERVICE_ROLE_KEY).' }, 500);
   }
   const admin = createClient(supabaseUrl, serviceRoleKey);
+
+  // Limite de débit (15/10/2026) : 20 appels / minute / wallet. Compteur en
+  // mémoire d'instance (best-effort, comme `rpc`) — la table n'a pas de
+  // journal d'appels, et le but est de brider l'abus trivial (rafale
+  // d'URL d'upload signées ou d'upserts), pas de prouver une identité.
+  if (rateExceeded(wallet)) {
+    return jsonResponse({ error: 'Trop de modifications — attends une minute.' }, 429);
+  }
 
   // ═══ action='avatar-upload-url' : signature déjà vérifiée ci-dessus →
   // le wallet a prouvé qu'il contrôle CE wallet, donc on l'autorise à

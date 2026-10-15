@@ -140,6 +140,21 @@ async function handle(req: Request): Promise<Response> {
     const messageText = String(body.messageText ?? '').trim().slice(0, MAX_MESSAGE_LEN);
     if (!messageText) return jsonResponse({ error: "Écris un message avant d'envoyer." }, 400);
 
+    // Limite de débit (15/10/2026), échec FERMÉ : 5 demandes / minute / wallet.
+    const since = new Date(Date.now() - 60_000).toISOString();
+    const { count, error: countError } = await admin
+      .from('builder_contact_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('from_wallet', wallet)
+      .gte('created_at', since);
+    if (countError) {
+      console.error('[contact] rate-limit count error:', countError.message);
+      return jsonResponse({ error: 'Vérification du débit indisponible — réessaie.' }, 503);
+    }
+    if ((count ?? 0) >= 5) {
+      return jsonResponse({ error: 'Trop de demandes — attends une minute.' }, 429);
+    }
+
     const { error } = await admin.from('builder_contact_requests').insert({
       from_wallet: wallet,
       to_wallet: toWallet,
