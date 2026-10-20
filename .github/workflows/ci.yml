@@ -109,6 +109,84 @@ jobs:
           exit 0
 
   # ═══════════════════════════════════════════════════════════════════
+  # Déploiement production — la prod doit toujours servir le dépôt.
+  #
+  # Pourquoi un job plutôt que l'intégration Git de Vercel : tant que le
+  # projet Vercel n'est pas branché sur ce dépôt, un push ne change RIEN en
+  # ligne. C'est exactement ce qui est arrivé le 20/10 : la prod servait
+  # 8f5e17d alors que main était à 4aa15f6 — deux commits d'écart, et des
+  # correctifs d'affichage invisibles en ligne pendant ce temps.
+  #
+  # Ce job comble ce trou : chaque push sur main qui passe la CI est mis en
+  # ligne par Vercel, avec le même jeton que le contrôle quotidien.
+  #
+  # ── Le jeton ───────────────────────────────────────────────────────
+  # Settings → Secrets and variables → Actions → VERCEL_TOKEN
+  # (vercel.com → Account Settings → Tokens → Create Token).
+  #
+  # ── Si le jeton manque ─────────────────────────────────────────────
+  # Le job ne casse PAS la CI : il le dit et ne fait rien. Le code reste
+  # poussé et validé, la production est simplement en retard — l'état
+  # exact du 20/10, mais signalé au lieu d'être subi en silence.
+  # ═══════════════════════════════════════════════════════════════════
+  deploy:
+    name: déploiement production (Vercel)
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: ci
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      # Nom du projet Vercel (variable de dépôt, pour ne pas le figer ici).
+      VERCEL_PROJECT: ${{ vars.VERCEL_PROJECT }}
+      # Optional : équipe Vercel qui possède le projet.
+      VERCEL_SCOPE: ${{ vars.VERCEL_SCOPE }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: 'npm ci'
+        run: npm ci
+
+      - name: Le jeton Vercel est-il là ?
+        run: |
+          if [ -z "${VERCEL_TOKEN}" ]; then
+            echo "::notice title=Déploiement ignoré::VERCEL_TOKEN est absent — le code est poussé et validé par la CI, mais la production reste en l'état. Ajoute le jeton (Settings → Secrets and variables → Actions)."
+            exit 0
+          fi
+
+      - name: Déploiement Vercel
+        if: env.VERCEL_TOKEN != ''
+        run: |
+          set -euo pipefail
+          npm i -g vercel@latest
+          LINK_ARGS="--project ${VERCEL_PROJECT} --yes --token=${VERCEL_TOKEN}"
+          if [ -n "${VERCEL_SCOPE}" ]; then LINK_ARGS="--scope ${VERCEL_SCOPE} ${LINK_ARGS}"; fi
+          vercel link ${LINK_ARGS}
+          # Déploiement depuis les sources : Vercel construit avec les
+          # réglages du projet, comme le ferait son intégration Git.
+          vercel deploy --prod --yes --token="${VERCEL_TOKEN}"
+
+      - name: La production sert-elle bien ce commit ?
+        if: env.VERCEL_TOKEN != ''
+        run: |
+          set +e
+          npm run check:prod
+          code=$?
+          set -e
+          case "$code" in
+            0) echo "✅ La production sert ce commit, sans secret en clair." ;;
+            1) echo "::warning title=Prod en retard::Le déploiement a peut-être été pris en charge mais pas encore propagé (CDN). Vérifier dans quelques minutes." ;;
+            3) echo "::error title=Clé d'API servie par la production::La livraison contient une valeur de forme secrète en clair. Révoquer la clé chez le fournisseur puis redéployer."; exit 1 ;;
+            *) echo "::warning title=check:prod indéterminable::Vérification impossible (code $code)." ;;
+          esac
+          exit 0
+
+  # ═══════════════════════════════════════════════════════════════════
   # Contrôle quotidien — trois questions posées chaque matin.
   #
   # Pourquoi un job à part du reste : la suite complète (typecheck, lint,
