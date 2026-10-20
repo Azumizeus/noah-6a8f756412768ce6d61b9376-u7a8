@@ -145,6 +145,17 @@ export default function PremiumPact({ pda }: Props = {}) {
         >
           <div
             style={{
+              // ⚠️ `position: relative` INDISPENSABLE — c'est le bloc de
+              // référence de l'image de bannière (voir bannerImageStyle :
+              // position absolute + inset 0 + height 100%). Sans lui, le
+              // containing block de l'image remontait jusqu'à la carte
+              // (position: relative), l'image couvrait donc TOUTE la carte —
+              // et le titre, la description et le bloc vault/membres
+              // passaient dessous, invisibles. Constaté le 20/10 : sur la
+              // fiche d'un pact, le titre et le pitch disparaissaient alors
+              // que la bannière était chargée. Même correctif que les
+              // cartes (PremiumProjectCard, ligne 76).
+              position: 'relative',
               height: 140,
               background: bannerFallbackGradient(isOpen),
               display: 'grid',

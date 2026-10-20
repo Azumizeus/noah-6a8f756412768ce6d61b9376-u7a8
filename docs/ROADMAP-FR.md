@@ -16,7 +16,7 @@
 - **Frais du protocole** : 200 bps (2 %) → `AVhVM29hD6YRLb2DujhKfF8Ger4bgaCpx9P93Q3XBWSH`
 - **Réseau** : Devnet uniquement
 - **Compte PDA de configuration** : supprimé le 24/08 ; l’ancien compte `5yRNQhn7W6sCFNVWhTWbZowQRKL7dNSaqYkpTtPxEF2C` est orphelin et inerte. Les frais et le portefeuille du protocole sont désormais des constantes compilées, sans compte administrateur modifiable.
-- **Tests** : 24/24 ✅
+- **Tests** : 43/43 ✅ (27 + 16)
 
 ## 02 — Fonctionnalités terminées
 
@@ -81,7 +81,7 @@
 - [x] Audit sécurité du programme : deux failles réelles corrigées (portefeuille des frais verrouillé et protection du coffre lors de `close_project`).
 - [x] Suppression du compte `Config` mutable ; constantes compilées et aucune autorité administrateur modifiable.
 - [x] Bornes des parts durcies : cumul en `u128` et `checked_add`.
-- [x] Suite de tests portée de 14 à 24/24 : parts, doublons, limite de 8 membres, unanimité et intégrité des paiements.
+- [x] Suite de tests portée de 14 à 24/24 puis 43/43 (27 + 16) : parts, doublons, limite de 8 membres, unanimité et intégrité des paiements.
 - [x] `SECURITY.md` : modèle de menace, failles corrigées, invariants et limites connues.
 - [x] `AUDIT.md` : audit d’accessibilité.
 - [x] `JUDGES-FR.md` / `JUDGES-ENG.md` : dossier bilingue pour les juges.
@@ -117,4 +117,5 @@
 | `AUDIT.md` | Audit d’accessibilité |
 | `JUDGES-FR.md` / `JUDGES-ENG.md` | Dossier bilingue pour les juges |
 | `programs/workspace/src/lib.rs` | Programme Anchor |
-| `tests/workspace.ts` | Suite LiteSVM (24/24) |
+| `tests/workspace.ts` | Suite LiteSVM (27/27) |
+| `tests/load-and-migration.ts` | Suite upgrade & charge (16/16) |

@@ -55,6 +55,7 @@ export const frV2 = {
     loading: 'Chargement de tes pacts…',
     youCreator: 'Créateur',
     youMember: 'Membre',
+    myProjectsHeading: 'Tes pacts',
   },
   notFound: {
     eyebrow: 'Devnet · Bêta',

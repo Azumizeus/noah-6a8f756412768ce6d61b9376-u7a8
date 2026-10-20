@@ -23,7 +23,7 @@
 *   **Frais du protocole** : 200 bps (2 %) → `AVhVM29hD6YRLb2DujhKfF8Ger4bgaCpx9P93Q3XBWSH` Protocol fees: 200 bps (2%) → `AVhVM29hD6YRLb2DujhKfF8Ger4bgaCpx9P93Q3XBWSH`
 *   **Réseau** : Devnet uniquement Network: Devnet only
 *   **Compte PDA de configuration** : supprimé le 24/08 ; l’ancien compte `5yRNQhn7W6sCFNVWhTWbZowQRKL7dNSaqYkpTtPxEF2C` est orphelin et inerte. Les frais et le portefeuille du protocole sont désormais des constantes compilées, sans compte administrateur modifiable. PDA Configuration Account: Deleted on 08/24. The old account `5yRNQhn7W6sCFNVWhTWbZowQRKL7dNSaqYkpTtPxEF2C` is now inactive and without an administrator. Fees and protocol portfolio are now compiled constants, without a modifiable administrator account.
-*   **Tests** : 24/24 ✅ Tests: 24/24 ✅
+*   **Tests** : 43/43 ✅ Tests: 43/43 ✅
 
 ## 02 — Fonctionnalités terminées 02 – Completed Features
 
@@ -88,7 +88,7 @@
 - [x] Audit sécurité du programme : deux failles réelles corrigées (portefeuille des frais verrouillé et protection du coffre lors de close_project). Security audit of the program: Two real vulnerabilities have been fixed (locked expense account and safe protection during close_project ).
 - [x] Suppression du compte Config mutable ; constantes compilées et aucune autorité administrateur modifiable. Suppression of the account Config ; compiled constants and no modifiable administrator authority.
 - [x] Bornes des parts durcies : cumul en u128 et checked_add. Hard part wear indicator: cumulative at u128 and checked_add .
-- [x] Suite de tests portée de 14 à 24/24 : parts, doublons, limite de 8 membres, unanimité et intégrité des paiements. Series of tests covering the period from 14 to 24/24: parts, duplicates, a maximum of 8 members, unanimous agreement, and payment integrity.
+- [x] Suite de tests portée de 14 à 24/24 puis 43/43 (27 + 16) : parts, doublons, limite de 8 membres, unanimité et intégrité des paiements. Series of tests covering the period from 14 to 24/24 then 43/43: parts, duplicates, a maximum of 8 members, unanimous agreement, and payment integrity.
 - [x] SECURITY.md : modèle de menace, failles corrigées, invariants et limites connues. SECURITY.md : Threat model, known vulnerabilities, invariants, and limitations.
 - [x] AUDIT.md : audit d’accessibilité. AUDIT.md : Accessibility audit.
 - [x] JUDGES-FR.md / JUDGES-ENG.md : dossier bilingue pour les juges. JUDGES-FR.md / JUDGES-ENG.md : Bilingual file for judges.
@@ -124,4 +124,5 @@
 | AUDIT.md | Audit d’accessibilité Accessibility Audit |
 | JUDGES-FR.md / JUDGES-ENG.md | Dossier bilingue pour les juges Bilingual dossier for judges |
 | programs/workspace/src/lib.rs | Programme Anchor Program Host |
-| tests/workspace.ts | Suite LiteSVM (24/24) LiteSVM (24/24) |
+| tests/workspace.ts | Suite LiteSVM (27/27) LiteSVM (27/27) |
+| tests/load-and-migration.ts | Suite upgrade & charge (16/16) upgrade & load suite (16/16) |

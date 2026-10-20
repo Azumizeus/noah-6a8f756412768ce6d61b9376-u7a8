@@ -1,6 +1,6 @@
 # BuildPact — le pacte des builders. La confiance, c'est du code.
 
-**Hackathon NoahAI Nitro 02 · Devnet uniquement · [Live demo](https://buildpact-solana.vercel.app)**
+**Colosseum · Devnet uniquement · [Démo live](https://buildpact-solana.vercel.app) · [Parcours guidé sans wallet](https://buildpact-solana.vercel.app/#/demo) · [Pacts réels](https://buildpact-solana.vercel.app/#/marketplace)**
 
 ---
 

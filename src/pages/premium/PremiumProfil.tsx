@@ -14,7 +14,7 @@
 // ═══════════════════════════════════════════════════════════════════
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { loadProfile, AVAILABILITY_META, SKILL_LEVEL_META, SKILL_LEVELS, emptyProfile, type BuilderProfile, type SkillLevel } from '../../lib/profile';
+import { loadProfile, saveProfile, AVAILABILITY_META, SKILL_LEVEL_META, SKILL_LEVELS, emptyProfile, type BuilderProfile, type SkillLevel } from '../../lib/profile';
 import { readStoredProfile, writeStoredProfile, bootEditForm, commitEditForm, mergeIntoRemoteProfile, type EditableProfile } from '../../lib/profileForm';
 import { fetchProfile, submitProfileUpdate, uploadProfileAvatar, isRemoteEnabled } from '../../lib/profileRemote';
 import { ALL_ROLES } from '../../lib/roles';
@@ -70,7 +70,39 @@ export default function PremiumProfil() {
   const myAddr = publicKey?.toBase58() ?? '';
 
   // Profil lu on-chain / local (cache offline)
-  const profile: BuilderProfile = useMemo(() => loadProfile(myAddr) ?? emptyProfile(myAddr), [myAddr]);
+  //
+  // ⚠️ 20/10 : la page ne lisait QUE le localStorage. Un cache vidé (ou
+  // simplement absent sur un autre appareil) affichait un profil vide — alors
+  // que la ligne serveur (`builder_profiles`) existait toujours et que le
+  // profil restait visible dans l'annuaire des builders. La SOURCE DE VÉRITÉ
+  // est le serveur ; le localStorage n'est qu'un cache. On lit donc les deux :
+  // le cache d'abord (rendu instantané, hors-ligne), le serveur en repli et en
+  // rafraîchissement, et le remote est recaché pour que les deux restent
+  // d'accord.
+  const [remoteProfile, setRemoteProfile] = useState<BuilderProfile | null>(null);
+  useEffect(() => {
+    if (!myAddr || !isRemoteEnabled) {
+      setRemoteProfile(null);
+      return;
+    }
+    let cancelled = false;
+    fetchProfile(myAddr).then((p) => {
+      if (cancelled) return;
+      setRemoteProfile(p);
+      // Le remote devient le cache local : sans cela, la page resterait
+      // « vide » à chaque rechargement tant que le cache n'est pas repeuplé.
+      if (p && !loadProfile(myAddr)) saveProfile(p);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [myAddr]);
+
+  const profile: BuilderProfile = useMemo(() => {
+    const local = loadProfile(myAddr);
+    if (local) return local;
+    return remoteProfile ?? emptyProfile(myAddr);
+  }, [myAddr, remoteProfile]);
 
   // Ce qui est enregistré : stockage local d'abord, sinon la chaîne.
   const saved = useMemo<EditableProfile>(() => {

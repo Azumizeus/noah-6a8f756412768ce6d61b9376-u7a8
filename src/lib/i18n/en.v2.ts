@@ -49,6 +49,7 @@ export const enV2 = {
     loading: 'Loading your pacts…',
     youCreator: 'Creator',
     youMember: 'Member',
+    myProjectsHeading: 'Your pacts',
   },
   notFound: {
     eyebrow: 'Devnet · Beta',

@@ -5,18 +5,32 @@
 // donc il ne changeait pas l'URL et n'ouvrait rien de distinct. Cette page
 // ne montre que les pacts du wallet connecté, lus on-chain — pas de chiffre
 // tant que le chargement n'est pas fini.
-import { useMemo, type CSSProperties } from 'react';
+//
+// 20/10 : la liste était une simple <ul> (titre + adresse + pastille) —
+// aucune description, aucun moyen de changer la densité de lecture. Elle
+// utilise désormais EXACTEMENT les mêmes quatre vues que le Marketplace
+// (grandes cartes / petites cartes / liste dense / tableau), via les mêmes
+// composants (ViewToggle, PremiumProjectCard, PactListRow) : un pact se lit
+// de la même façon partout, et le dashboard affiche enfin le pitch.
+import { useMemo, useState, type CSSProperties } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useProjects } from '../../hooks/useProjects';
+import { useProjectMedia } from '../../hooks/useProjectMedia';
+import { useListingView } from '../../hooks/useListingView';
+import { ViewToggle, NumberedPagination, usePagedSlice } from '../../components/ListControls';
 import { formatAddress, formatSol } from '../../lib/pacts';
+import { parsePitch, stageBadgeLabel } from '../../lib/pitch';
 import { useLanguage } from '../../lib/i18n/LanguageContext';
+import PactListRow from '../../components/PactListRow';
 import PremiumNav from './PremiumNav';
+import PremiumProjectCard from './PremiumProjectCard';
 import '../../styles/premium.css';
 
 export default function PremiumMyDashboard() {
   const { t } = useLanguage();
   const { publicKey } = useWallet();
   const { pacts, loading, error } = useProjects();
+  const { media } = useProjectMedia();
   const me = publicKey?.toBase58() ?? null;
 
   const mine = useMemo(() => {
@@ -30,6 +44,12 @@ export default function PremiumMyDashboard() {
     () => mine.reduce((sum, p) => sum + (p.status === 'active' ? p.vaultBalanceSol : 0), 0),
     [mine],
   );
+
+  // Même convention que le Marketplace : le choix de vue est persisté par
+  // page (clé localStorage propre au dashboard).
+  const [view, setView] = useListingView('v2-dashboard');
+  const [page, setPage] = useState(1);
+  const paged = usePagedSlice(mine, page, setPage, view === 'list' || view === 'table' ? 8 : 12, view);
 
   return (
     <div className="p-page">
@@ -85,45 +105,122 @@ export default function PremiumMyDashboard() {
                 </div>
               </section>
             ) : (
-              <ul style={{ listStyle: 'none', margin: '22px 0 0', padding: 0, display: 'grid', gap: 10 }}>
-                {mine.map((p) => {
-                  const creator = p.creator.toBase58() === me;
-                  return (
-                    <li key={p.pda.toBase58()}>
-                      <a
-                        href={`#/pact/${p.pda.toBase58()}`}
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          gap: 12,
-                          flexWrap: 'wrap',
-                          alignItems: 'center',
-                          padding: '14px 16px',
-                          background: 'var(--p-canvas)',
-                          border: '1px solid var(--p-line)',
-                          borderRadius: 'var(--p-radius-md)',
-                          textDecoration: 'none',
-                          color: 'var(--p-ink)',
-                        }}
-                      >
-                        <span>
-                          <strong style={{ display: 'block' }}>{p.title}</strong>
-                          <span style={{ fontSize: 12, color: 'var(--p-ink3)' }}>
-                            {formatAddress(p.pda.toBase58())}
-                            {' · '}
-                            {creator ? t('v2.myDashboard.youCreator') : t('v2.myDashboard.youMember')}
-                          </span>
-                        </span>
-                        <span className={'p-pill ' + (p.status === 'active' ? 'ok' : 'warn')}>
-                          {p.status === 'active'
-                            ? `${formatSol(p.vaultBalanceSol)} SOL`
-                            : t('v2.dashboard.pillRecruiting')}
-                        </span>
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
+              <>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 26, marginBottom: 14 }}>
+                  <h2 style={{ fontSize: 17, fontWeight: 700, color: 'var(--p-ink)', margin: 0 }}>
+                    {t('v2.myDashboard.myProjectsHeading')}
+                  </h2>
+                  <ViewToggle
+                    view={view}
+                    onChange={setView}
+                    largeViewLabel={t('common.viewLarge')}
+                    smallViewLabel={t('common.viewSmall')}
+                    listViewLabel={t('common.viewList')}
+                    tableLabel={t('common.viewTable')}
+                    ariaLabel={t('common.viewAria')}
+                  />
+                </div>
+
+                {/* VUE LISTE DENSE */}
+                {view === 'list' && (
+                  <div style={{ background: 'var(--p-canvas)', border: '1px solid var(--p-line)', borderRadius: 'var(--p-radius-lg)', overflow: 'hidden', boxShadow: 'var(--p-shadow)' }}>
+                    {paged.slice.map((p) => {
+                      const isOpen = p.status !== 'active';
+                      const totalBps = p.members.reduce((sum, m) => sum + m.shareBps, 0);
+                      const creator = p.creator.toBase58() === me;
+                      return (
+                        <PactListRow
+                          key={p.pda.toBase58()}
+                          seed={p.pda.toBase58()}
+                          logo={media.get(p.pda.toBase58())?.logoUrl}
+                          title={p.title}
+                          meta={`${creator ? t('v2.myDashboard.youCreator') : t('v2.myDashboard.youMember')} · ${formatAddress(p.pda.toBase58())} · ${p.members.length} ${t('marketplaceCard.members')}`}
+                          figure={isOpen ? `${Math.max(0, 100 - Math.round(totalBps / 100))} %` : `${formatSol(p.vaultBalanceSol)} SOL`}
+                          pill={<span className={'p-pill ' + (isOpen ? 'warn' : 'ok')}>{isOpen ? t('marketplaceCard.recruiting') : t('marketplaceCard.funding')}</span>}
+                          href={`#/pact/${p.pda.toBase58()}`}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* VUE TABLEAU */}
+                {view === 'table' && (
+                  <div style={{ background: 'var(--p-canvas)', border: '1px solid var(--p-line)', borderRadius: 'var(--p-radius-lg)', overflow: 'auto', boxShadow: 'var(--p-shadow)' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid var(--p-line)' }}>
+                          {[t('v2.dashboard.thPact'), t('v2.dashboard.thStatus'), t('v2.dashboard.thVault'), t('v2.dashboard.kMembers'), t('v2.myDashboard.youMember')].map((h) => (
+                            <th key={h} style={{ textAlign: 'left', fontSize: 10, letterSpacing: 0.1, textTransform: 'uppercase', color: 'var(--p-ink3)', padding: '12px 16px', fontWeight: 600 }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paged.slice.map((p) => {
+                          const isOpen = p.status !== 'active';
+                          const creator = p.creator.toBase58() === me;
+                          return (
+                            <tr key={p.pda.toBase58()} style={{ borderBottom: '1px solid var(--p-line)' }}>
+                              <td style={{ padding: '12px 16px' }}>
+                                <a href={`#/pact/${p.pda.toBase58()}`} style={{ fontWeight: 650, color: 'var(--p-ink)', textDecoration: 'none' }}>{p.title}</a>
+                              </td>
+                              <td style={{ padding: '12px 16px' }}>
+                                <span className={'p-pill ' + (isOpen ? 'warn' : 'ok')}>{isOpen ? t('marketplaceCard.recruiting') : t('marketplaceCard.funding')}</span>
+                              </td>
+                              <td style={{ padding: '12px 16px', fontVariantNumeric: 'tabular-nums' }}>{p.status === 'active' ? `${formatSol(p.vaultBalanceSol)} SOL` : '—'}</td>
+                              <td style={{ padding: '12px 16px', fontVariantNumeric: 'tabular-nums' }}>{p.members.length}</td>
+                              <td style={{ padding: '12px 16px', fontSize: 11.5, color: 'var(--p-ink2)' }}>{creator ? t('v2.myDashboard.youCreator') : t('v2.myDashboard.youMember')}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* VUE CARTES */}
+                {(view === 'large' || view === 'small') && (
+                  <div style={{ display: 'grid', gap: view === 'small' ? 10 : 16, gridTemplateColumns: view === 'small' ? 'repeat(auto-fill,minmax(250px,1fr))' : '1fr 1fr' }}>
+                    {paged.slice.map((p) => {
+                      const parsed = parsePitch(p.description);
+                      const totalBps = p.members.reduce((sum, m) => sum + m.shareBps, 0);
+                      const entry = media.get(p.pda.toBase58());
+                      const isOpen = p.status !== 'active';
+                      const creator = p.creator.toBase58() === me;
+                      return (
+                        <PremiumProjectCard
+                          key={p.pda.toBase58()}
+                          title={p.title}
+                          bannerUrl={entry?.bannerUrl}
+                          logoUrl={entry?.logoUrl}
+                          size={view === 'small' ? 'small' : 'large'}
+                          isOpen={isOpen}
+                          pill={<span className={'p-pill ' + (isOpen ? 'warn' : 'ok')}>{isOpen ? t('marketplaceCard.recruiting') : t('marketplaceCard.funding')}</span>}
+                          description={parsed.pitch}
+                          stage={
+                            isOpen && parsed.stage ? (
+                              <p style={{ fontSize: 10.5, fontWeight: 650, color: 'var(--p-accent)', background: 'var(--p-accent-soft)', borderRadius: 99, padding: '4px 10px', alignSelf: 'flex-start', marginBottom: 10 }}>
+                                {stageBadgeLabel(parsed.stage)}
+                              </p>
+                            ) : undefined
+                          }
+                          kv={[
+                            { k: isOpen ? t('v2.dashboard.kAllocated') : t('v2.dashboard.thVault'), v: isOpen ? `${Math.round(totalBps / 100)} %` : `${formatSol(p.vaultBalanceSol)} SOL` },
+                            { k: isOpen ? t('v2.dashboard.kAvailable') : t('v2.dashboard.kMembers'), v: isOpen ? `${100 - Math.round(totalBps / 100)} %` : String(p.members.length) },
+                          ]}
+                          trackPct={Math.min(100, totalBps / 100)}
+                          legend={<>{creator ? t('v2.myDashboard.youCreator') : t('v2.myDashboard.youMember')}</>}
+                          actions={
+                            <a className="p-btn ghost" href={`#/pact/${p.pda.toBase58()}`}>{t('marketplaceCard.viewSheet')}</a>
+                          }
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+
+                <NumberedPagination page={paged.page} pageCount={paged.pageCount} onChange={setPage} />
+              </>
             )}
           </>
         )}

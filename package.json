@@ -1,8 +1,26 @@
 {
-  "name": "node-solana-starter-app",
-  "private": true,
-  "version": "0.0.0",
+  "name": "buildpact",
+  "version": "0.1.0",
+  "description": "On-chain cap table + escrow for Solana builders — create → add_member → approve → finalize → fund → distribute",
+  "license": "MIT",
+  "author": "Mickael Dunoyer <mickael.dunoyer@gmail.com>",
+  "homepage": "https://buildpact-solana.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Azumizeus/noah-6a8f756412768ce6d61b9376-u7a8.git",
+    "directory": "."
+  },
+  "keywords": [
+    "solana",
+    "anchor",
+    "escrow",
+    "cap-table",
+    "web3",
+    "devnet",
+    "buildpact"
+  ],
   "type": "module",
+  "private": true,
   "scripts": {
     "dev": "vite --host",
     "typecheck": "tsc -p tsconfig.app.json --noEmit",

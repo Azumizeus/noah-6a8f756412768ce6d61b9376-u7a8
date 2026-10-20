@@ -1,6 +1,6 @@
 # BuildPact — the builders' pact. Trust, written in code.
 
-**NoahAI Nitro 02 Hackathon · Devnet only · [Live demo](https://buildpact-solana.vercel.app)**
+**Colosseum · Devnet only · [Live demo](https://buildpact-solana.vercel.app) · [Guided tour, no wallet](https://buildpact-solana.vercel.app/#/demo) · [Real pacts](https://buildpact-solana.vercel.app/#/marketplace)**
 
 ---
 
@@ -76,7 +76,7 @@ A structured second audit pass (full report, zero critical findings) covered the
 
 ## Tests
 
-**24/24 passing.** Full happy path (create → add members → approve → finalize → fund → distribute, verifying the protocol receives exactly 2% and members split 98% pro-rata) plus every rejection path.
+**43/43 passing** — 27 in `tests/workspace.ts`, 16 in `tests/load-and-migration.ts`. Full happy path (create → add members → approve → finalize → fund → distribute, verifying the protocol receives exactly 2% and members split 98% pro-rata) plus every rejection path.
 
 **Access control and lifecycle**
 
@@ -138,7 +138,8 @@ Canonical PDA seeds, signer checks everywhere, checked arithmetic, no mutable ad
 | [`SECURITY.md`](./SECURITY.md) | Threat model, every on-chain invariant with its error code, the findings and their fixes, and the known limitations |
 | [`ROADMAP-ENG.md`](./ROADMAP-ENG.md) | Day-by-day build log and post-hackathon plan |
 | `programs/workspace/src/lib.rs` | The program — 9 instructions, no admin surface |
-| `tests/workspace.ts` | The suite, LiteSVM — 24/24 |
+| `tests/workspace.ts` | The main suite, LiteSVM — 27/27 |
+| `tests/load-and-migration.ts` | The 27/08 upgrade & load suite, LiteSVM — 16/16 |
 
 ---
 

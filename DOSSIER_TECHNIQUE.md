@@ -313,7 +313,7 @@ suit une chaîne se décale.
 | `TOTAL_BPS` | 10 000 | Somme des parts, invariant vérifié on-chain |
 | `MAX_PROJECT_ID_LEN` | 20 | Sert de seed PDA — plafond Solana à 32 octets |
 | `MAX_TITLE_LEN` | 80 | Après upgrade (40 avant) |
-| `MAX_DESC_LEN` | 500 | Après upgrade (280 avant) |
+| `MAX_DESC_LEN` | 800 | Après upgrade (280 avant, puis 500 au build du 27/08) |
 | `MAX_ROLE_LEN` | 32 | Après upgrade (24 avant) |
 | `PROTOCOL_FEE_BPS` | 200 | 2 %, wallet destinataire figé on-chain |
 | `DUST_TOLERANCE_LAMPORTS` | 1 000 | Permet de fermer un pact distribué à la poussière près |

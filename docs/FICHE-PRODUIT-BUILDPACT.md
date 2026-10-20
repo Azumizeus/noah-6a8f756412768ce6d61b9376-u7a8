@@ -101,7 +101,7 @@ Modèle menaces complet : `docs/SECURITY.md`. Limites V1 assumées : ajout de me
 
 ## 8. Tests & qualité
 
-- **On-chain : 24/24** — happy path complet (create → add → approve → finalize → fund → distribute, protocole = exactement 2%) + tous les rejets : mauvais protocol wallet, signers non-créateur, >100%, incomplet, non-approuvés, doublons wallet (`DuplicateMember`), 9e membre (`TooManyMembers`), modif post-finalize (`AlreadyFinalized`), tampering payout (`MemberMismatch`), close vault plein, dust-close avec refund, close post-distribution avec récup rent.
+- **On-chain : 43/43** (27 + 16) — happy path complet (create → add → approve → finalize → fund → distribute, protocole = exactement 2%) + tous les rejets : mauvais protocol wallet, signers non-créateur, >100%, incomplet, non-approuvés, doublons wallet (`DuplicateMember`), 9e membre (`TooManyMembers`), modif post-finalize (`AlreadyFinalized`), tampering payout (`MemberMismatch`), close vault plein, dust-close avec refund, close post-distribution avec récup rent.
 - **Frontend/tooling :** `npm test` = garde-fous (secret-scan, history-scan, bornes pages premium, etc.).
 
 ```bash

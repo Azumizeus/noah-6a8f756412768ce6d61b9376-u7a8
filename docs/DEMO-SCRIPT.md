@@ -1,9 +1,11 @@
 # BuildPact — Script démo live + storyboard vidéo 3 min
 
-NoahAI Nitro 02 (26/08) · **Soumission Colosseum Builder Program : 12/10/2026** · Devnet uniquement
+Colosseum · **Soumission Builder Program : 18/09/2026 (reçue et validée)** · dépôt complet : 12/10/2026 · Devnet uniquement
 
 > Mise à jour Colosseum : la candidature initiale a été soumise le 18/09 avec le lien live.
 > Le 12/10 correspond au dépôt final complet (soumission avec le repo en privé + cette vidéo).
+> ⚠️ Colosseum exige **deux** vidéos : présentation 2-3 min **et** démo produit ≤ 3 min.
+> Le storyboard de la vidéo de présentation est dans `VIDEO-SCRIPT-2MIN.md` (section « Ce que Colosseum demande EXACTEMENT »).
 
 
 Note : ce document est en français pour toi. Tout ce qui est entre guillemets **« comme ça »** est à dire/écrire en anglais dans la vidéo et devant les juges (ils ne parlent pas français).

@@ -2,6 +2,20 @@
 
 **Solana Devnet · [Live demo](https://buildpact-solana.vercel.app) · Hackathon build**
 
+> ### Judges — start here, no wallet needed
+>
+> | What | Link |
+> |---|---|
+> | **Guided tour, 8 steps, no wallet** (the argument to make) | https://buildpact-solana.vercel.app/#/demo |
+> | **Real finalized pacts on devnet** | https://buildpact-solana.vercel.app/#/marketplace |
+> | Live app | https://buildpact-solana.vercel.app |
+> | Program ID (devnet) | `9quyDwntXDBhNhTmrfCf7xEXVFaxYMB83BwPEUeqVoUJ` · [IDL](src/idl/buildpact.json) |
+> | Judge notes | [EN](docs/JUDGES-ENG.md) · [FR](docs/JUDGES-FR.md) |
+> | Demo script | [docs/DEMO-SCRIPT.md](docs/DEMO-SCRIPT.md) |
+>
+> **Devnet only** — mainnet is planned after the event. Every number, account and
+> transaction below is real and measured on devnet, not mocked.
+
 ---
 
 ## What BuildPact is
@@ -97,6 +111,17 @@ verified on-chain transaction) and then writes with `service_role`. The author
 field is always set by the server from the wallet whose signature was just
 verified — never from a client-supplied value.
 
+## Repository layout
+
+| Path | What it is |
+|---|---|
+| `programs/workspace/src/lib.rs` | The Anchor program — the whole on-chain product |
+| `src/pages/`, `src/components/` | BuildPact UI (public app: `/`, `/pacts`, `/create`, `/marketplace`, `/demo`, `/treasury`, …) |
+| `src/pages/premium/` | The NOAH AI platform tier that hosts BuildPact (routes `/v1/*`) — not part of the judged product |
+| `supabase/functions/` | Edge Functions: the RPC relay, the read/write split, the assistant |
+| `tests/` | On-chain suite — runs on LiteSVM, no validator, no network |
+| `docs/` | Judge notes, security notes, demo script, submission kit |
+
 ## Security
 
 Two real vulnerabilities were found by an internal audit and fixed in the
@@ -116,22 +141,36 @@ guards on the Treasury export, and client-side bounds on pact creation.
 
 ## Tests
 
-- **On-chain:** 24/24 passing — full happy path (create → add members →
+- **On-chain:** 43/43 passing (`tests/workspace.ts` 27 + `tests/load-and-migration.ts` 16) — full happy path (create → add members →
   approve → finalize → fund → distribute, checking the protocol receives
   exactly 2%) plus every rejection path: wrong protocol wallet, non-creator
   signers, over-100% shares, incomplete shares, unapproved members, duplicate
   wallets, the 8-member cap, post-finalization changes, and payout-list
-  tampering.
+  tampering. The suite runs on **LiteSVM**, in-process: no validator, no
+  network, no devnet.
 - **Frontend / tooling:** `npm test` runs the repository's guard-rail suite
   (secret scanning, history scanning, premium-page boundaries and more).
 
 ```bash
 npm install
+cp .env.example .env.local   # VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, RPC_URL
 npm run dev        # local dev server
 npm test           # guard-rail suite
 npm run typecheck  # TypeScript, no emit
 npm run build      # typecheck + production build
 ```
+
+To rebuild the program locally (Anchor 0.31.1, `avm install 0.31.1`):
+
+```bash
+anchor build                                                      # target/idl + target/deploy
+npx ts-mocha -p ./tsconfig.anchor.json -t 1000000 "tests/**/*.ts"  # on-chain suite (LiteSVM)
+```
+
+> ⚠️ Do **not** run `anchor test` in this repository: `[provider] cluster` is
+> `devnet`, and the upgrade authority in `~/.config/solana/id.json` is the
+> live one — `anchor test` would redeploy over the program running on devnet.
+> The suite above runs on LiteSVM, in-process, with no validator and no network.
 
 ## Documentation
 
