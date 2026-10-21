@@ -33,7 +33,7 @@ import { readLang } from './i18n/langStorage';
  * serveur ne matche plus et TOUS les envois échouent avec « Session
  * invalide », sans autre symptôme.
  */
-export const CHAT_SESSION_TTL_HOURS = 24;
+export const CHAT_SESSION_TTL_HOURS = 2;
 const TTL_MS = CHAT_SESSION_TTL_HOURS * 60 * 60 * 1000;
 
 /**

@@ -216,13 +216,29 @@ function runRewriteCheck() {
 }
 
 function installHook() {
-  const hookPath = git(['rev-parse', '--git-path', 'hooks/pre-push']);
-  const script = '#!/usr/bin/env bash\n' +
-    '# Posé par scripts/git-guard.mjs --install (anti-incident du 07/10/2026).\n' +
-    'exec node "$(git rev-parse --show-toplevel)/scripts/git-guard.mjs" --hook\n';
-  writeFileSync(hookPath, script, 'utf8');
-  chmodSync(hookPath, 0o755);
-  console.log(`✓ Hook posé : ${hookPath}`);
+  // 21/10 (audit supply-chain, SC-04) : le hook existait mais n'était pas
+  // installé — un envoi de masse passait. Et il n'était pas VERSIONNÉ : un
+  // clone ne l'avait donc jamais. On pose désormais `core.hooksPath` vers un
+  // dossier versionné (.githooks/) : le hook voyage avec le dépôt, et il
+  // reste lisible par un juge.
+  const versioned = '.githooks/pre-push';
+  const root = git(['rev-parse', '--show-toplevel']);
+  const versionedPath = root ? `${root}/${versioned}` : versioned;
+  if (existsSync(versionedPath)) {
+    git(['config', 'core.hooksPath', '.githooks']);
+    chmodSync(versionedPath, 0o755);
+    console.log(`✓ Hook posé : ${versionedPath} (core.hooksPath=.githooks)`);
+  } else {
+    // Repli : dépôt sans le hook versionné (branche ancienne) — on écrit
+    // alors le hook dans .git/hooks comme avant.
+    const hookPath = git(['rev-parse', '--git-path', 'hooks/pre-push']);
+    const script = '#!/usr/bin/env bash\n' +
+      '# Posé par scripts/git-guard.mjs --install (anti-incident du 07/10/2026).\n' +
+      'exec node "$(git rev-parse --show-toplevel)/scripts/git-guard.mjs" --hook\n';
+    writeFileSync(hookPath, script, 'utf8');
+    chmodSync(hookPath, 0o755);
+    console.log(`✓ Hook posé : ${hookPath}`);
+  }
   console.log('  Tout push de plus de ' + LOT_MAX + ' fichiers sera refusé.');
   console.log('  Contournement volontaire : ALLOW_MASS_PUSH=1 git push …');
   return 0;

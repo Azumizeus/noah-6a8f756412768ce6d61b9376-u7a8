@@ -62,7 +62,7 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     // Source maps cachées : débuggage prod sans exposer le code source
-    sourcemap: "hidden",
+    sourcemap: false,
     // Code-splitting : sépare les libs lourdes du bundle applicatif.
     // Rolldown (Vite 8) exige une fonction, pas un objet.
     rollupOptions: {

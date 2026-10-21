@@ -144,11 +144,43 @@ export interface TranslationByokConfig {
   apiKey: string;
 }
 
+// La clé API « bring your own key » de l'utilisateur NE DOIT PAS dormir sur
+// le disque : en localStorage, elle y reste jusqu'à la purge manuelle du
+// navigateur (et un seul script exécuté dans l'origine la lit). Elle est
+// donc en sessionStorage — effacée à la fermeture de l'onglet. Une session
+// de traduction, c'est quelques minutes : la fenêtre d'exposition passe de
+// « illimitée » à « jusqu'à la fermeture du navigateur ».
+//
+// (Audit du 21/10, docs/audits/2026-10-21/03-frontend-react-ts.md, F-02.)
 const BYOK_KEY = 'buildpact_translation_byok';
+
+function store(): Storage {
+  try {
+    // sessionStorage peut lever (mode privé strict, iframe tierce).
+    const s = window.sessionStorage;
+    const probe = '__bp__';
+    s.setItem(probe, '1');
+    s.removeItem(probe);
+    return s;
+  } catch {
+    return localStorage;
+  }
+}
 
 export function loadTranslationByok(): TranslationByokConfig | null {
   try {
-    const raw = localStorage.getItem(BYOK_KEY);
+    // Migration : une clé laissée dans localStorage par une version
+    // antérieure est reprise en session puis EFFACÉE du disque.
+    try {
+      const legacy = localStorage.getItem(BYOK_KEY);
+      if (legacy) {
+        store().setItem(BYOK_KEY, legacy);
+        localStorage.removeItem(BYOK_KEY);
+      }
+    } catch {
+      /* stockage indisponible : sans conséquence */
+    }
+    const raw = store().getItem(BYOK_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (parsed?.provider && parsed?.apiKey) return parsed as TranslationByokConfig;
@@ -160,8 +192,15 @@ export function loadTranslationByok(): TranslationByokConfig | null {
 
 export function saveTranslationByok(config: TranslationByokConfig | null): void {
   try {
-    if (config) localStorage.setItem(BYOK_KEY, JSON.stringify(config));
-    else localStorage.removeItem(BYOK_KEY);
+    if (config) store().setItem(BYOK_KEY, JSON.stringify(config));
+    else {
+      store().removeItem(BYOK_KEY);
+      try {
+        localStorage.removeItem(BYOK_KEY);
+      } catch {
+        /* non bloquant */
+      }
+    }
   } catch {
     /* non bloquant */
   }

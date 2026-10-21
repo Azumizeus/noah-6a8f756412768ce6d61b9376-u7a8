@@ -29,7 +29,7 @@ const MAX_CLOCK_SKEW_MS = 60 * 1000;
 /** ⚠️ Doit rester synchronisé avec CHAT_SESSION_TTL_HOURS dans
  *  src/lib/chatSession.ts — la valeur est écrite en toutes lettres dans le
  *  message signé. */
-const SESSION_TTL_HOURS = 24;
+const SESSION_TTL_HOURS = 2;
 const SESSION_TTL_MS = SESSION_TTL_HOURS * 60 * 60 * 1000;
 
 const REVOCATION_SKEW_MS = MAX_CLOCK_SKEW_MS;

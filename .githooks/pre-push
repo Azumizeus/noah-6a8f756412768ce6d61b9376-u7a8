@@ -1,0 +1,13 @@
+#!/bin/sh
+# Hook pre-push — VERSIONNÉ dans le dépôt (core.hooksPath = .githooks)
+#
+# L'audit du 21/10 (docs/audits/2026-10-21/04-supply-chain-ci-secrets.md,
+# SC-04) : le script de garde existait (scripts/git-guard.mjs) mais le hook
+# n'était PAS installé — un envoi de masse ou un --force passait.
+#
+# Installation : npm run guard:install  (git config core.hooksPath .githooks)
+# Pour autoriser un envoi massif ponctuel : ALLOW_MASS_PUSH=1 git push
+set -e
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+exec node scripts/git-guard.mjs --hook

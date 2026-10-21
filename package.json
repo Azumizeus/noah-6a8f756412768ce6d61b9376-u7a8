@@ -45,8 +45,8 @@
     "preview": "vite preview",
     "watch": "vite build --watch",
     "guard:push": "node scripts/git-guard.mjs --range origin/main..HEAD",
-    "guard:rewrite": "node scripts/git-guard.mjs --rewrite",
-    "guard:install": "node scripts/git-guard.mjs --install"
+    "guard:install": "node scripts/git-guard.mjs --install",
+    "guard:rewrite": "node scripts/git-guard.mjs --rewrite"
   },
   "dependencies": {
     "@babel/parser": "^8.0.4",

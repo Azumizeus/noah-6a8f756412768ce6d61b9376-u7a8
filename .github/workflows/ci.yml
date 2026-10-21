@@ -62,14 +62,14 @@ jobs:
       PROD_URL: ${{ vars.PROD_URL }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           # Historique complet : check:prod compte les commits d'avance et
           # résout le commit de base de la PR.
           fetch-depth: 0
 
       - name: Node 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@1e60f620b9541dca151540d0e8b6c8c6a5b8a2b3 # v4.1.0
         with:
           node-version: '24'
           cache: npm
@@ -85,6 +85,45 @@ jobs:
 
       - name: Tests (sans navigateur)
         run: npm test
+
+      - name: Scan profond de l'historique git (secrets)
+        # L'audit du 21/10 (docs/audits/2026-10-21/04-supply-chain-ci-secrets.md,
+        # SC-01/SC-02) : `npm run check:history` existe et fonctionne, mais
+        # AUCUN workflow ne l'appelait — et en mode par défaut il ne lit que
+        # 33 % des octets de l'historique. Un secret commité puis retiré de
+        # HEAD (exactement l'incident du 09/10) était invisible. Le mode
+        # `--profond` referme l'angle mort : il est branché ici.
+        run: |
+          set +e
+          npm run check:history:profond
+          code=$?
+          set -e
+          case "$code" in
+            0) echo "✅ Aucun secret dans l'historique (lecture complète)." ;;
+            1) echo "::error title=Secret dans l'historique git::Un secret a été trouvé dans un commit antérieur. RÉVOQUE la clé d'abord (une purge ne dévalide rien), puis purge l'historique. Détail dans le résumé du job."; exit 1 ;;
+            *) echo "::warning title=Scan d'historique indéterminable::Code $code — ce n'est pas un succès." ;;
+          esac
+
+      - name: Scan profond de l'historique (scripts de la BRANCHE DE BASE)
+        # SC-06 : un garde-fou exécuté depuis le code de la PR peut avoir
+        # été réécrit pour retourner 0. Sur une PR, on récupère donc le
+        # script de la branche de base (la version de confiance) et on
+        # l'exécute sur l'arbre de la PR, depuis la racine du dépôt.
+        if: github.event_name == 'pull_request'
+        run: |
+          set +e
+          git fetch --no-tags --depth=1 origin ${{ github.event.pull_request.base.sha }}
+          mkdir -p /tmp/ci-base-scripts
+          git show ${{ github.event.pull_request.base.sha }}:scripts/history-secret-scan.mjs > /tmp/ci-base-scripts/history-secret-scan.mjs
+          git show ${{ github.event.pull_request.base.sha }}:scripts/secret-rules.mjs > /tmp/ci-base-scripts/secret-rules.mjs
+          node /tmp/ci-base-scripts/history-secret-scan.mjs --profond
+          code=$?
+          set -e
+          case "$code" in
+            0) echo "✅ Aucun secret dans l'historique (scripts de la branche de base)." ;;
+            1) echo "::error title=Secret dans l'historique::Un secret a été trouvé dans un commit antérieur. Révoque la clé (une purge ne dévalide rien), puis purge l'historique."; exit 1 ;;
+            *) echo "::warning title=Scan d'historique indéterminable::Code $code — ce n'est pas un succès." ;;
+          esac
 
       - name: Build
         run: npm run build
@@ -130,7 +169,7 @@ jobs:
       PROD_URL: ${{ vars.PROD_URL }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
 
@@ -199,12 +238,12 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
 
       - name: Node 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@1e60f620b9541dca151540d0e8b6c8c6a5b8a2b3 # v4.1.0
         with:
           node-version: '24'
           cache: npm
