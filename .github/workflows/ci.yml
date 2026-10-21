@@ -149,8 +149,11 @@ jobs:
         with:
           node-version: '24'
 
-      - name: 'npm ci'
-        run: npm ci
+      # Pas de `npm ci` ici : `vercel deploy` envoie les SOURCES et Vercel
+      # construit de son côté, avec les réglages du projet. Installer les
+      # dépendances ne servait à rien — et c'était un point de rupture :
+      # le 21/10, `npm ci` a échoué sur un ECONNRESET du réseau GitHub
+      # Actions et a fait échouer tout le job de déploiement.
 
       - name: Le jeton Vercel est-il là ?
         run: |
