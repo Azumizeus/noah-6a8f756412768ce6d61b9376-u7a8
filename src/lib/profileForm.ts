@@ -20,7 +20,15 @@ export type EditableProfile = {
   avatarUrl: string;
   bannerUrl: string;
   skillLevel: SkillLevel | null;
+  /** Bio du builder (280 car. max, borne de l'Edge Function). 21/10 : le
+   *  champ manquait dans le formulaire premium — la bio n'était modifiable
+   *  que depuis l'ancienne page /v1/profile. */
+  bio: string;
 };
+
+/** Longueur maximale de la bio — même borne que l'Edge Function
+ *  `update-profile` (il tronque à 280 de son côté). */
+export const MAX_BIO_LEN = 280;
 
 // Clé de stockage localStorage (hors-ligne, pas de Supabase).
 export const PROFILE_FORM_KEY = 'premiumProfilV2';
@@ -48,6 +56,7 @@ export function readStoredProfile(storage: StorageLike, myAddr: string): Editabl
       avatarUrl: str(parsed.avatarUrl),
       bannerUrl: str(parsed.bannerUrl),
       skillLevel: SKILL_LEVELS.includes(level as SkillLevel) ? (level as SkillLevel) : null,
+      bio: str(parsed.bio).slice(0, MAX_BIO_LEN),
     };
   } catch {
     return null;
@@ -72,6 +81,7 @@ export function bootEditForm(displayed: EditableProfile): EditableProfile {
     avatarUrl: displayed.avatarUrl,
     bannerUrl: displayed.bannerUrl,
     skillLevel: displayed.skillLevel,
+    bio: displayed.bio ?? '',
   };
 }
 
@@ -83,6 +93,7 @@ export function commitEditForm(form: EditableProfile): EditableProfile {
     avatarUrl: form.avatarUrl.trim(),
     bannerUrl: form.bannerUrl.trim(),
     skillLevel: form.skillLevel,
+    bio: (form.bio ?? '').trim().slice(0, MAX_BIO_LEN),
   };
 }
 
@@ -121,5 +132,10 @@ export function mergeIntoRemoteProfile(base: BuilderProfile, values: EditablePro
     avatarUrl: values.avatarUrl || null,
     bannerUrl: values.bannerUrl || null,
     skillLevels,
+    // Bio : une bio SAISIE écrase la bio distante ; une bio VIDE la laisse
+    // intacte. Contrairement à l'avatar et à la bannière (vides = « effacer »),
+    // on ne veut pas perdre la bio d'un founder parce que le formulaire a
+    // été ouvert et refermé sans y toucher.
+    bio: values.bio && values.bio.trim() ? values.bio.trim() : base.bio,
   };
 }

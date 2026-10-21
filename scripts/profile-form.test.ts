@@ -49,6 +49,7 @@ const displayedProfile: EditableProfile = {
   avatarUrl: 'https://cdn.example/a.png',
   bannerUrl: 'https://cdn.example/b.png',
   skillLevel: 'expert',
+  bio: '',
 };
 
 test('enregistrer : les valeurs sont persistées puis relues à l’identique', () => {
@@ -60,6 +61,7 @@ test('enregistrer : les valeurs sont persistées puis relues à l’identique', 
     avatarUrl: '  https://cdn.example/a.png  ',
     bannerUrl: '',
     skillLevel: 'confirme',
+    bio: '',
   };
 
   const saved = commitEditForm(typed);
@@ -71,6 +73,7 @@ test('enregistrer : les valeurs sont persistées puis relues à l’identique', 
     avatarUrl: 'https://cdn.example/a.png',
     bannerUrl: '',
     skillLevel: 'confirme',
+    bio: '',
   });
 
   // La relecture rend exactement ce qui a été enregistré.
@@ -112,7 +115,7 @@ test('annuler : bootEditForm repart des valeurs enregistrées et jette la saisie
 
 test('restaurer : après enregistrement, le profil relu correspond aux valeurs saisies', () => {
   const storage = memoryStorage();
-  const edited = commitEditForm({ pseudo: 'Alice v2', avatarUrl: '', bannerUrl: '', skillLevel: 'debutant' });
+  const edited = commitEditForm({ pseudo: 'Alice v2', avatarUrl: '', bannerUrl: '', skillLevel: 'debutant', bio: '' });
   writeStoredProfile(storage, WALLET_A, edited);
 
   const restored = readStoredProfile(storage, WALLET_A);
@@ -187,7 +190,7 @@ test('distant : le pseudo, l’avatar et la bannière saisis écrasent ceux du s
 });
 
 test('distant : un champ vidé part en null, jamais en chaîne vide', () => {
-  const values = commitEditForm({ pseudo: 'Alice', avatarUrl: '', bannerUrl: '   ', skillLevel: 'expert' });
+  const values = commitEditForm({ pseudo: 'Alice', avatarUrl: '', bannerUrl: '   ', skillLevel: 'expert', bio: '' });
 
   const merged = mergeIntoRemoteProfile(remoteBase, values);
 
@@ -195,6 +198,20 @@ test('distant : un champ vidé part en null, jamais en chaîne vide', () => {
   // Function accepte — la conversion est faite par submitProfileUpdate.
   assert.equal(merged.avatarUrl, null);
   assert.equal(merged.bannerUrl, null);
+  // Bio vide = bio distante INTACTE (on n'efface pas ce que le founder a
+  // écrit en ouvrant et refermant le formulaire).
+  assert.equal(merged.bio, 'Bio distante');
+});
+
+test('distant : une bio saisie écrase la bio distante', () => {
+  const merged = mergeIntoRemoteProfile(remoteBase, {
+    pseudo: 'Alice',
+    avatarUrl: '',
+    bannerUrl: '',
+    skillLevel: 'confirme',
+    bio: 'Nouvelle bio',
+  });
+  assert.equal(merged.bio, 'Nouvelle bio');
 });
 
 test('distant : le niveau choisi va au rôle affiché, les autres restent intacts', () => {
@@ -205,6 +222,7 @@ test('distant : le niveau choisi va au rôle affiché, les autres restent intact
     avatarUrl: '',
     bannerUrl: '',
     skillLevel: 'confirme',
+    bio: '',
   });
 
   assert.deepEqual(merged.skillLevels, { design: 'confirme', dev: 'debutant' });
@@ -218,6 +236,7 @@ test('distant : « aucun niveau » retire le niveau affiché au lieu d’en inve
     avatarUrl: '',
     bannerUrl: '',
     skillLevel: null,
+    bio: '',
   });
 
   assert.deepEqual(merged.skillLevels, { dev: 'debutant' });
@@ -231,6 +250,7 @@ test('distant : sans rôle déclaré, un niveau choisi ne crée pas de rôle fan
     avatarUrl: '',
     bannerUrl: '',
     skillLevel: 'expert',
+    bio: '',
   });
 
   // Un niveau n'a pas de sens sans rôle : la map reste vide plutôt que

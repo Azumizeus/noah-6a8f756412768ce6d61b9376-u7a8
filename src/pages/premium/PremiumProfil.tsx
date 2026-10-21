@@ -15,7 +15,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { loadProfile, saveProfile, AVAILABILITY_META, SKILL_LEVEL_META, SKILL_LEVELS, emptyProfile, type BuilderProfile, type SkillLevel } from '../../lib/profile';
-import { readStoredProfile, writeStoredProfile, bootEditForm, commitEditForm, mergeIntoRemoteProfile, type EditableProfile } from '../../lib/profileForm';
+import { readStoredProfile, writeStoredProfile, bootEditForm, commitEditForm, mergeIntoRemoteProfile, MAX_BIO_LEN, type EditableProfile } from '../../lib/profileForm';
 import { fetchProfile, submitProfileUpdate, uploadProfileAvatar, isRemoteEnabled } from '../../lib/profileRemote';
 import { ALL_ROLES } from '../../lib/roles';
 import { useLanguage } from '../../lib/i18n/LanguageContext';
@@ -113,6 +113,7 @@ export default function PremiumProfil() {
       avatarUrl: stored?.avatarUrl || profile.avatarUrl || '',
       bannerUrl: stored?.bannerUrl || profile.bannerUrl || '',
       skillLevel: stored?.skillLevel ?? levelFromChain,
+      bio: stored?.bio ?? profile.bio ?? '',
     };
   }, [myAddr, profile]);
 
@@ -129,6 +130,11 @@ export default function PremiumProfil() {
   const [editingAvatarUrl, setEditingAvatarUrl] = useState('');
   const [editingBannerUrl, setEditingBannerUrl] = useState('');
   const [editingSkillLevel, setEditingSkillLevel] = useState<SkillLevel | null>(null);
+  // Bio : champ éditable (280 car., borne de l'Edge Function). Avant, la bio
+  // n'était modifiable que depuis l'ancienne page /v1/profile — d'où des
+  // bio restées sales (« …parler.rsgdsfgdrsf gbfd ») sans moyen de les
+  // corriger depuis l'UI moderne.
+  const [editingBio, setEditingBio] = useState('');
   const [status, setStatus] = useState<string | null>(null);
   // Enregistrement serveur en cours : le bouton se verrouille le temps de
   // l'aller-retour, sinon un double clic envoie deux écritures.
@@ -151,6 +157,7 @@ export default function PremiumProfil() {
     setEditingAvatarUrl(form.avatarUrl);
     setEditingBannerUrl(form.bannerUrl);
     setEditingSkillLevel(form.skillLevel);
+    setEditingBio(form.bio);
     setStatus(null);
     setIsEditing(true);
   };
@@ -162,6 +169,7 @@ export default function PremiumProfil() {
       avatarUrl: editingAvatarUrl,
       bannerUrl: editingBannerUrl,
       skillLevel: editingSkillLevel,
+      bio: editingBio,
     });
 
     // 1. Valider que le pseudo n'est pas vide
@@ -370,6 +378,32 @@ export default function PremiumProfil() {
                       aria-label="URL avatar"
                     />
                   </div>
+                </div>
+
+                {/* Bio — champ éditable, 280 caractères (même borne que
+                    l'Edge Function `update-profile`). 21/10 : la bio
+                    n'était modifiable que depuis l'ancienne page /v1/profile,
+                    ce qui laissait des bio sales sans moyen de les corriger
+                    depuis l'UI moderne. */}
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ display: 'block', fontSize: 11, color: 'var(--p-ink2)', marginBottom: 4 }}>
+                    {t('profile.bio')}
+                  </label>
+                  <textarea
+                    value={editingBio}
+                    onChange={(e) => setEditingBio(e.target.value.slice(0, MAX_BIO_LEN))}
+                    rows={3}
+                    style={{
+                      width: '100%', padding: '8px', fontSize: 13, lineHeight: 1.55,
+                      border: '1px solid var(--p-line)', borderRadius: 6,
+                      background: 'var(--p-canvas)', color: 'var(--p-ink)',
+                      resize: 'vertical', fontFamily: 'inherit',
+                    }}
+                    aria-label={t('profile.bio')}
+                  />
+                  <p style={{ fontSize: 10.5, color: 'var(--p-ink3)', margin: '4px 0 0' }}>
+                    {editingBio.length}/{MAX_BIO_LEN}
+                  </p>
                 </div>
 
                 {/* Avatar par fichier — l'autre fonction qui ne vivait que
