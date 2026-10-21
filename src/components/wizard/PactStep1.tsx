@@ -54,6 +54,8 @@ interface Props {
 
   descWillTruncate: boolean;
   descBytesUsed: number;
+  /** Octets encore disponibles sur les 800 (pitch + étape + rôles + seed). */
+  descBytesLeft: number;
 
   loading: boolean;
   onCreate: () => void;
@@ -115,6 +117,20 @@ export default function PactStep1(p: Props) {
               onChange={(e) => p.setDescription(e.target.value)}
             />
             <small className={hintCls}>{t('createWizard.descriptionHint')}</small>
+            {/* Compteur d'octets LIVE — le budget de 800 se partage entre le
+                pitch, la clé d'étape, les rôles et le seed : sans compteur,
+                l'utilisateur découvre le dépassement au moment de signer. */}
+            <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
+              <small className={hintCls}>{t('createWizard.descriptionOneLangHint')}</small>
+              <small
+                className={
+                  'font-mono text-[11px] ' +
+                  (p.descBytesLeft < 0 ? 'text-red-300' : p.descBytesLeft < 80 ? 'text-amber-300' : 'text-ink-400')
+                }
+              >
+                {t('createWizard.descriptionBytes', { used: p.descBytesUsed, left: Math.max(0, p.descBytesLeft) })}
+              </small>
+            </div>
           </div>
 
           {/* TYPE DE RECHERCHE */}

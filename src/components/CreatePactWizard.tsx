@@ -338,6 +338,10 @@ export function CreatePactWizard({ onSuccess, onClose }: Props) {
     previewSeedInfo;
   const descBytesUsed = utf8ByteLength(previewFullDescription);
   const descWillTruncate = descBytesUsed > MAX_DESC_LEN;
+  // Octets encore disponibles : ce qui reste pour le pitch libre. Utile
+  // parce que les 800 octets ne sont pas tous pour le pitch : la clé
+  // d'étape, la liste des rôles et le seed en mangent une centaine.
+  const descBytesLeft = MAX_DESC_LEN - descBytesUsed;
 
   const toggleRole = (id: string) => {
     const next = selectedRoles.includes(id)
@@ -813,6 +817,7 @@ export function CreatePactWizard({ onSuccess, onClose }: Props) {
           }}
           descWillTruncate={descWillTruncate}
           descBytesUsed={descBytesUsed}
+          descBytesLeft={descBytesLeft}
           loading={loading}
           onCreate={handleCreate}
         />
