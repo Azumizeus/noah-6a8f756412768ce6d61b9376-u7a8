@@ -62,14 +62,14 @@ jobs:
       PROD_URL: ${{ vars.PROD_URL }}
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           # Historique complet : check:prod compte les commits d'avance et
           # résout le commit de base de la PR.
           fetch-depth: 0
 
       - name: Node 24
-        uses: actions/setup-node@1e60f620b9541dca151540d0e8b6c8c6a5b8a2b3 # v4.1.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: npm
@@ -169,7 +169,7 @@ jobs:
       PROD_URL: ${{ vars.PROD_URL }}
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
@@ -238,12 +238,12 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
       - name: Node 24
-        uses: actions/setup-node@1e60f620b9541dca151540d0e8b6c8c6a5b8a2b3 # v4.1.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: npm
