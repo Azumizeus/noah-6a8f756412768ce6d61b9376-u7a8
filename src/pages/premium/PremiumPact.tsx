@@ -37,7 +37,7 @@ interface Props {
 }
 
 export default function PremiumPact({ pda }: Props = {}) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const pdaFromHash = (typeof window !== 'undefined' && window.location.hash.match(/\/v2\/pact\/([1-9A-HJ-NP-Za-km-z]{32,44})/))?.[1] ?? null;
   const pactData = usePublicPact(pda ?? pdaFromHash ?? null);
   const pact = pactData.pact;
@@ -124,6 +124,21 @@ export default function PremiumPact({ pda }: Props = {}) {
   }
 
   const mediaEntry = media.get(pact.pda.toBase58());
+
+  // ═══ Présentation longue, hors chaîne (FR + EN) ═══
+  // Le pitch on-chain est plafonné à 800 octets et se verrouille à la
+  // création : c'est la promesse du produit (le pact ne change plus).
+  // Mais la présentation longue — celle que le founder a écrite en français
+  // ET en anglais — vit dans `project_media.about_text` / `about_text_en`
+  // (4 000 caractères, modifiable même après finalisation, écriture
+  // signée). Elle existait déjà, mais n'était affichée que par les pages
+  // legacy `/v1` : les pages premium (celles en ligne) l'ignoraient — d'où
+  // des descriptions qui semblaient amputées alors que le texte long était
+  // bien enregistré. 21/10 : on l'affiche.
+  const aboutForLang =
+    lang === 'en'
+      ? mediaEntry?.aboutTextEn || mediaEntry?.aboutText
+      : mediaEntry?.aboutText || mediaEntry?.aboutTextEn;
 
   return (
     <div className="p-page">
@@ -214,6 +229,29 @@ export default function PremiumPact({ pda }: Props = {}) {
               <p style={{ fontSize: 13.5, color: 'var(--p-ink2)', lineHeight: 1.7, marginTop: 14 }}>
                 <TranslatedMessage text={pitchText} />
               </p>
+            )}
+
+            {/* Présentation longue (FR/EN) — hors chaîne, modifiable après
+                finalisation. Le pitch on-chain reste au-dessus : c'est lui
+                qui est signé et vérifiable par un tiers. */}
+            {aboutForLang && (
+              <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--p-line)' }}>
+                <h3
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    letterSpacing: '0.09em',
+                    textTransform: 'uppercase',
+                    color: 'var(--p-ink3)',
+                    margin: '0 0 8px',
+                  }}
+                >
+                  {lang === 'en' ? 'About this project' : 'À propos du projet'}
+                </h3>
+                <p style={{ fontSize: 13.5, color: 'var(--p-ink2)', lineHeight: 1.75, whiteSpace: 'pre-wrap' }}>
+                  {aboutForLang}
+                </p>
+              </div>
             )}
 
             {/* Partage — la donnée les membres du founder */}

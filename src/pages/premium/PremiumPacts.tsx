@@ -21,10 +21,20 @@ import '../../styles/premium.css';
 type Filter = 'all' | 'active' | 'pending' | 'mine';
 
 export default function PremiumPacts() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { publicKey } = useWallet();
   const { pacts, loading, error } = useProjects();
   const { media } = useProjectMedia();
+
+  // Présentation longue hors chaîne (FR/EN) — `project_media.about_text`.
+  // Elle existait déjà mais n'était lue que par les pages legacy /v1 ; les
+  // cartes premium montraient le pitch on-chain, parfois tronqué en plein
+  // milieu d'un mot par les anciens builds (280/500 octets). 21/10 : on
+  // affiche le texte long quand il existe, le pitch on-chain sinon.
+  const aboutForLang = (pda: string) => {
+    const m = media.get(pda);
+    return lang === 'en' ? m?.aboutTextEn || m?.aboutText : m?.aboutText || m?.aboutTextEn;
+  };
 
   const [filter, setFilter] = useState<Filter>('all');
   const mine = useMemo(
@@ -166,7 +176,7 @@ export default function PremiumPacts() {
                   size={view === 'small' ? 'small' : 'large'}
                   isOpen={isOpen}
                   pill={<span className={'p-pill ' + (isOpen ? 'warn' : 'ok')}>{isOpen ? t('v2.pacts.pillOpen') : t('v2.pacts.pillFunds')}</span>}
-                  description={displayPitchShort(p.description, 130)}
+                  description={aboutForLang(p.pda.toBase58()) || displayPitchShort(p.description, 130)}
                   kv={[
                     { k: t('v2.dashboard.thVault'), v: p.status === 'active' ? `${formatSol(p.vaultBalanceSol)} SOL` : '—' },
                     { k: t('v2.dashboard.kMembers'), v: String(p.members.length) },

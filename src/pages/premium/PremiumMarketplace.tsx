@@ -22,13 +22,24 @@ import '../../styles/premium.css';
 type Filter = 'all' | 'recruiting' | 'funding';
 
 export default function PremiumMarketplace() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { publicKey } = useWallet();
   const { pacts, loading, error } = useProjects();
   const { media } = useProjectMedia();
   const { openRoles } = useOpenRoles();
   const [filter, setFilter] = useState<Filter>('all');
   const [applyTo, setApplyTo] = useState<ChainPact | null>(null);
+
+
+  // Présentation longue hors chaîne (FR/EN) — `project_media.about_text`.
+  // Elle existait déjà mais n'était lue que par les pages legacy /v1 ; les
+  // cartes premium montraient le pitch on-chain, parfois tronqué en plein
+  // milieu d'un mot par les anciens builds (280/500 octets). 21/10 : on
+  // affiche le texte long quand il existe, le pitch on-chain sinon.
+  const aboutForLang = (pda: string) => {
+    const m = media.get(pda);
+    return lang === 'en' ? m?.aboutTextEn || m?.aboutText : m?.aboutText || m?.aboutTextEn;
+  };
 
   const recruiting = useMemo(() => pacts.filter((p) => p.status !== 'active'), [pacts]);
   const funding = useMemo(() => pacts.filter((p) => p.status === 'active'), [pacts]);
@@ -197,7 +208,7 @@ export default function PremiumMarketplace() {
                   size={view === 'small' ? 'small' : 'large'}
                   isOpen={isOpen}
                   pill={<span className={'p-pill ' + (isOpen ? 'warn' : 'ok')}>{isOpen ? t('marketplaceCard.recruiting') : t('marketplaceCard.funding')}</span>}
-                  description={parsed.pitch}
+                  description={aboutForLang(p.pda.toBase58()) || parsed.pitch}
                   stage={
                     isOpen && parsed.stage ? (
                       <p style={{ fontSize: 10.5, fontWeight: 650, color: 'var(--p-accent)', background: 'var(--p-accent-soft)', borderRadius: 99, padding: '4px 10px', alignSelf: 'flex-start', marginBottom: 10 }}>
