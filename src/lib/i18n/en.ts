@@ -357,6 +357,10 @@ export const en: Dict = {
     // Uploading the file and saving the profile are two distinct writes:
     // saying so avoids the impression that the photo is already attached.
     avatarUploaded: 'Photo uploaded — hit Save to attach it to your profile.',
+    bannerSteps: 'Wide image shown at the top of your profile (4 MB max, png/jpeg/webp/gif).',
+    bannerUploaded: 'Banner uploaded — click “Save” to publish it.',
+    uploadBanner: 'Upload a banner',
+
     exportPdf: '📄 Export as PDF',
     bio: 'Bio',
     // Both strings pointed at the "legacy portal" (#/v1/profile). The link is

@@ -227,11 +227,70 @@ export async function submitProfileUpdate(
   }
 }
 
+const ALLOWED_BANNER_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+const MAX_BANNER_BYTES = 4 * 1024 * 1024; // 4 Mo — une bannière est plus large
 const ALLOWED_AVATAR_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 
 /** Upload la photo de profil : demande une URL signée (Edge Function, wallet vérifié),
  *  upload direct au bucket public builder-avatars, retourne l'URL publique (cache-bust). */
+/**
+ * Envoie une bannière de profil (bucket `builder-banners`, 4 Mo max).
+ *
+ * Même mécanique que l'avatar : l'Edge Function `update-profile` signe le
+ * chemin d'écriture (action `banner-upload-url`) après vérification de la
+ * signature du wallet, puis le client dépose le fichier dans le bucket via
+ * une URL signée. 21/10 : l'upload existait côté serveur depuis le début
+ * (bucket, action, plafond) mais l'UI premium n'exposait que l'avatar — la
+ * bannière n'était donc saisissable qu'en collant une URL.
+ */
+export async function uploadProfileBanner(
+  wallet: string,
+  signMessage: (message: Uint8Array) => Promise<Uint8Array>,
+  file: File
+): Promise<{ url: string } | { error: string }> {
+  if (!isRemoteEnabled || !UPDATE_PROFILE_URL || !supabase) return { error: tr('errors.notConfigured') };
+  if (!ALLOWED_BANNER_TYPES.includes(file.type)) return { error: tr('errors.mediaBadFormat') };
+  if (file.size > MAX_BANNER_BYTES) return { error: tr('errors.mediaTooLarge', { max: (MAX_BANNER_BYTES / 1024 / 1024).toFixed(0) }) };
+
+  const timestamp = Date.now();
+  const message = buildProfileSignMessage(wallet, timestamp);
+  let signatureBytes: Uint8Array;
+  try {
+    signatureBytes = await signMessage(new TextEncoder().encode(message));
+  } catch (e: any) {
+    const msg: string = e?.message ?? '';
+    if (msg.toLowerCase().includes('user rejected')) return { error: tr('errors.signatureRejected') };
+    return { error: tr('errors.signMessageUnsupported') };
+  }
+
+  const res = await fetch(UPDATE_PROFILE_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'banner-upload-url',
+      wallet,
+      message,
+      signature: Array.from(signatureBytes),
+      mimeType: file.type,
+      sizeBytes: file.size,
+    }),
+  }).catch(() => null);
+  if (!res) return { error: tr('errors.serverUnreachable') };
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) return { error: data?.error ?? tr('errors.serverError', { status: res.status }) };
+
+  const { error: uploadError } = await supabase.storage
+    .from('builder-banners')
+    .uploadToSignedUrl(data.path as string, data.token as string, file);
+  if (uploadError) {
+    console.warn('[profileRemote] banner upload error:', uploadError.message);
+    return { error: tr('errors.uploadFailed') };
+  }
+
+  return { url: `${data.publicUrl}?t=${Date.now()}` };
+}
+
 export async function uploadProfileAvatar(
   wallet: string,
   signMessage: (message: Uint8Array) => Promise<Uint8Array>,

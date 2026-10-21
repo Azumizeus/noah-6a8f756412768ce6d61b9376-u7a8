@@ -398,6 +398,10 @@ export const fr: Dict = {
     // L'envoi du fichier et l'enregistrement du profil sont deux écritures
     // distinctes : le dire évite de croire que la photo est déjà rattachée.
     avatarUploaded: 'Photo envoyée — clique sur Enregistrer pour la rattacher à ton profil.',
+    bannerSteps: 'Image large affichée en tête de ta fiche (4 Mo max, png/jpeg/webp/gif).',
+    bannerUploaded: 'Bannière téléchargée — clique sur « Enregistrer » pour la publier.',
+    uploadBanner: 'Téléverser une bannière',
+
     exportPdf: '📄 Exporter en PDF',
     bio: 'Bio',
     // Ces deux phrases renvoyaient au « portail historique » (#/v1/profile).

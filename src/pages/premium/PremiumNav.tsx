@@ -123,6 +123,31 @@ export default function PremiumNav({ active }: { active: string }) {
           </button>
         ))}
 
+        {/* ── Action primaire : créer un pact ──────────────────────────
+            Elle est DANS la barre de navigation, pas planquée dans un menu :
+            sans elle, un juge qui ouvre l'app n'a aucun chemin visible vers
+            « créer un pact » (le wizard n'était atteignable que par l'état
+            vide du dashboard ou par un lien direct). 21/10. */}
+        <a
+          href="#/create"
+          className="p-btn primary"
+          style={{
+            marginLeft: 10,
+            minHeight: 36,
+            padding: '0 16px',
+            fontSize: 12.5,
+            fontWeight: 700,
+            textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            flex: '0 0 auto',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          + {t('v2.myDashboard.create')}
+        </a>
+
         {/* Switch thème compact */}
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginLeft: 8 }}>
           {APPEARANCE_IDS.map((id: AppearanceId) => (

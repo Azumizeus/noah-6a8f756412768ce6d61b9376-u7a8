@@ -16,7 +16,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { loadProfile, saveProfile, AVAILABILITY_META, SKILL_LEVEL_META, SKILL_LEVELS, emptyProfile, type BuilderProfile, type SkillLevel } from '../../lib/profile';
 import { readStoredProfile, writeStoredProfile, bootEditForm, commitEditForm, mergeIntoRemoteProfile, MAX_BIO_LEN, type EditableProfile } from '../../lib/profileForm';
-import { fetchProfile, submitProfileUpdate, uploadProfileAvatar, isRemoteEnabled } from '../../lib/profileRemote';
+import { fetchProfile, submitProfileUpdate, uploadProfileAvatar, uploadProfileBanner, isRemoteEnabled } from '../../lib/profileRemote';
 import { ALL_ROLES } from '../../lib/roles';
 import { useLanguage } from '../../lib/i18n/LanguageContext';
 import PremiumNav from './PremiumNav';
@@ -146,6 +146,13 @@ export default function PremiumProfil() {
   // inversement.
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  // Bannière : même mécanique que l'avatar, côté serveur déjà prête
+  // (bucket `builder-banners`, action `banner-upload-url`, 4 Mo). 21/10 :
+  // l'UI premium n'exposait que l'avatar — la bannière n'était donc
+  // saisissable qu'en collant une URL, ce qui la rendait impossible à
+  // mettre depuis l'app.
+  const [bannerUploading, setBannerUploading] = useState(false);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   // ----- Ouverture du formulaire -----
   // Amorce le formulaire à l'OUVERTURE, pas à l'initialisation du composant :
@@ -404,6 +411,62 @@ export default function PremiumProfil() {
                   <p style={{ fontSize: 10.5, color: 'var(--p-ink3)', margin: '4px 0 0' }}>
                     {editingBio.length}/{MAX_BIO_LEN}
                   </p>
+                </div>
+
+                {/* Bannière par fichier — miroir de l'avatar. Le serveur
+                    gère déjà le bucket `builder-banners` et l'action
+                    `banner-upload-url` (4 Mo, png/jpeg/webp/gif) ; il ne
+                    manquait que le bouton côté interface. */}
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ display: 'block', fontSize: 11, color: 'var(--p-ink2)', marginBottom: 4 }}>
+                    {t('profile.bannerLabel')}
+                  </label>
+                  <p style={{ fontSize: 10.5, color: 'var(--p-ink3)', margin: '0 0 6px' }}>
+                    {t('profile.bannerSteps')}
+                  </p>
+                  <input
+                    ref={bannerInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    style={{ fontSize: 11, color: 'var(--p-ink2)' }}
+                  />
+                  <button
+                    type="button"
+                    disabled={bannerUploading}
+                    onClick={async () => {
+                      const file = bannerInputRef.current?.files?.[0];
+                      if (!file) return;
+                      if (!myAddr || !walletSignMessage) {
+                        setStatus(t('profile.noSignMessage'));
+                        return;
+                      }
+                      setBannerUploading(true);
+                      const r = await uploadProfileBanner(myAddr, walletSignMessage, file);
+                      setBannerUploading(false);
+                      if ('error' in r) {
+                        setStatus(r.error);
+                        return;
+                      }
+                      // Comme pour l'avatar : l'URL est posée dans le
+                      // formulaire, c'est « Enregistrer » qui persiste.
+                      setEditingBannerUrl(r.url);
+                      if (bannerInputRef.current) bannerInputRef.current.value = '';
+                      setStatus(t('profile.bannerUploaded'));
+                    }}
+                    style={{
+                      marginTop: 6,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: 'var(--p-ink2)',
+                      background: 'transparent',
+                      border: '1px solid var(--p-line)',
+                      borderRadius: 8,
+                      padding: '5px 10px',
+                      cursor: bannerUploading ? 'progress' : 'pointer',
+                    }}
+                  >
+                    {bannerUploading ? t('profile.uploading') : t('profile.uploadBanner')}
+                  </button>
                 </div>
 
                 {/* Avatar par fichier — l'autre fonction qui ne vivait que
